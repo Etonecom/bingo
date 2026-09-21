@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ቢንጎ — የግንኙነት ሙከራ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F4EF; --surface:#FFFFFF; --surface2:#E3EAE2; --ink:#15231B; --muted:#5C6B62; --line:#D1DBD0;
+  --green:#0E6B3D; --green-ink:#FFFFFF; --gold:#E4A11B; --red:#C5352B;
+  --ok-bg:#E1F2E7; --bad-bg:#F9DEDA; --wait-bg:#FBEBD0;
+  --font:'Noto Sans Ethiopic','Abyssinica SIL','Nyala',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#101914; --surface:#18241D; --surface2:#22322A; --ink:#ECF2ED; --muted:#98A89E; --line:#2E4036;
+    --green:#3BB472; --green-ink:#052013; --gold:#F0B434; --red:#EE6C5F;
+    --ok-bg:#183524; --bad-bg:#3D1E1B; --wait-bg:#3B2E14;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55}
+main{max-width:520px;margin:0 auto;padding:16px 14px 40px;display:flex;flex-direction:column;gap:12px}
+h1{font-size:22px;margin:4px 0 0}
+.muted{color:var(--muted);font-size:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.status{display:flex;align-items:center;gap:10px;border-radius:10px;padding:10px 12px;background:var(--wait-bg)}
+.status.ok{background:var(--ok-bg)}
+.status.bad{background:var(--bad-bg)}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--gold);flex:none}
+.status.ok .dot{background:var(--green)}
+.status.bad .dot{background:var(--red)}
+.status b{display:block}
+.status span{font-size:14px;color:var(--muted);word-break:break-word}
+label{display:block;font-weight:600;margin:8px 0 4px}
+input{width:100%;min-height:48px;border:2px solid var(--line);border-radius:10px;padding:8px 12px;font:inherit;background:var(--surface);color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn{border:0;border-radius:10px;padding:12px 16px;min-height:48px;font:inherit;font-weight:700;background:var(--green);color:var(--green-ink);cursor:pointer;width:100%;margin-top:10px}
+.btn.alt{background:var(--surface2);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+ul{list-style:none;margin:0;padding:0}
+li{padding:8px 0;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+li b{margin-inline-end:6px}

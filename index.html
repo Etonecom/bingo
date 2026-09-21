@@ -45,3 +45,130 @@ ul{list-style:none;margin:0;padding:0}
 li{padding:8px 0;border-top:1px solid var(--line)}
 li:first-child{border-top:0}
 li b{margin-inline-end:6px}
+li small{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1>የግንኙነት ሙከራ</h1>
+  <p class="muted">ይህ ገጽ ከFirebase ጋር መነጋገሩን ብቻ ያረጋግጣል። ሁለት ስልክ (ወይም ሁለት ብሮውዘር) ላይ ከፍተህ አንዱ ላይ መልዕክት ላክ፤ በሌላው ላይ ወዲያው መታየት አለበት።</p>
+
+  <div class="status" id="s-db"><div class="dot"></div><div><b>ዳታቤዝ</b><span id="s-db-t">እየተገናኘ ነው…</span></div></div>
+  <div class="status" id="s-auth"><div class="dot"></div><div><b>መግቢያ (ስም-አልባ)</b><span id="s-auth-t">እየገባ ነው…</span></div></div>
+
+  <section class="panel">
+    <label for="name">ስምህ</label>
+    <input id="name" maxlength="20" placeholder="ለምሳሌ አንዱዓለም" autocomplete="off">
+    <label for="msg">መልዕክት</label>
+    <input id="msg" maxlength="80" placeholder="ሰላም!" autocomplete="off">
+    <button class="btn" id="send">ላክ</button>
+    <p class="muted" id="send-note"></p>
+  </section>
+
+  <section class="panel">
+    <b>የተላኩ መልዕክቶች</b>
+    <ul id="list"><li class="muted">እስካሁን ምንም የለም።</li></ul>
+    <button class="btn alt" id="clear">ሁሉንም አጥፋ</button>
+  </section>
+
+  <p class="muted">የሙከራ ገጽ፣ ስሪት 1</p>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, push, remove, onValue, serverTimestamp, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCzg6CzEz9e4Q9icfdoegSZkJh-TQjqIgc",
+  authDomain: "bingogame-40fa0.firebaseapp.com",
+  databaseURL: "https://bingogame-40fa0-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bingogame-40fa0",
+  storageBucket: "bingogame-40fa0.firebasestorage.app",
+  messagingSenderId: "656225626762",
+  appId: "1:656225626762:web:4c80ead178e340f24e9b73"
+};
+
+const $ = (id) => document.getElementById(id);
+function setStatus(id, kind, text){
+  const box = $(id), t = $(id + '-t');
+  box.className = 'status' + (kind ? ' ' + kind : '');
+  t.textContent = text;
+}
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+/* 1. የዳታቤዝ ግንኙነት */
+onValue(ref(db, '.info/connected'), (snap) => {
+  if (snap.val() === true) setStatus('s-db', 'ok', 'ተገናኝቷል');
+  else setStatus('s-db', '', 'እየተገናኘ ነው… ኢንተርኔትህን ተመልከት።');
+});
+
+/* 2. ስም-አልባ መግቢያ */
+let myUid = null;
+signInAnonymously(auth).then((cred) => {
+  myUid = cred.user.uid;
+  setStatus('s-auth', 'ok', 'ገብቷል። የአንተ መለያ፦ ' + myUid.slice(0, 8) + '…');
+}).catch((err) => {
+  if (err.code === 'auth/operation-not-allowed' || err.code === 'auth/admin-restricted-operation'){
+    setStatus('s-auth', 'bad', 'ስም-አልባ መግቢያ አልበራም። Firebase → Build → Authentication → Sign-in method → Anonymous ን አብራ።');
+  } else {
+    setStatus('s-auth', 'bad', 'ስህተት፦ ' + (err.code || err.message));
+  }
+});
+
+/* 3. መልዕክቶችን በቀጥታ ማንበብ */
+const msgsRef = ref(db, 'test/messages');
+onValue(query(msgsRef, limitToLast(20)), (snap) => {
+  const list = $('list');
+  list.textContent = '';
+  const items = [];
+  snap.forEach((child) => { items.push(child.val()); });
+  if (!items.length){
+    const li = document.createElement('li');
+    li.className = 'muted';
+    li.textContent = 'እስካሁን ምንም የለም።';
+    list.appendChild(li);
+    return;
+  }
+  items.forEach((m) => {
+    const li = document.createElement('li');
+    const b = document.createElement('b');
+    b.textContent = m.name || 'ስም-አልባ';
+    const span = document.createElement('span');
+    span.textContent = m.text || '';
+    const small = document.createElement('small');
+    small.textContent = m.t ? ' · ' + new Date(m.t).toLocaleTimeString('am-ET', { hour: '2-digit', minute: '2-digit' }) : '';
+    li.append(b, span, small);
+    list.appendChild(li);
+  });
+}, (err) => {
+  setStatus('s-db', 'bad', 'ማንበብ አልተቻለም፦ ' + (err.code || err.message) + ' (የዳታቤዙ ደንብ ሊሆን ይችላል)');
+});
+
+/* 4. መልዕክት መላክ */
+$('send').addEventListener('click', async () => {
+  const name = $('name').value.trim();
+  const text = $('msg').value.trim();
+  const note = $('send-note');
+  note.textContent = '';
+  if (!name || !text){ note.textContent = 'ስምና መልዕክት ሁለቱንም ጻፍ።'; return; }
+  $('send').disabled = true;
+  try {
+    await push(msgsRef, { name, text, t: serverTimestamp(), uid: myUid });
+    $('msg').value = '';
+    note.textContent = 'ተልኳል።';
+  } catch (err) {
+    note.textContent = 'መላክ አልተቻለም፦ ' + (err.code || err.message);
+  }
+  $('send').disabled = false;
+});
+
+$('clear').addEventListener('click', async () => {
+  try { await remove(msgsRef); } catch (err) { $('send-note').textContent = 'ማጥፋት አልተቻለም፦ ' + (err.code || err.message); }
+});
+</script>
+</body>
+</html>

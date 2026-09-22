@@ -455,6 +455,17 @@ async function resetRound(){
   } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
   S.busy = false; render();
 }
+async function stopRound(){
+  if (!S.room || !S.round) return;
+  if (!confirm('ይህን ዙር አሁን ላቁመው?')) return;
+  stopCallerTimers();
+  S.busy = true; render();
+  try {
+    await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], stopped: true }, claimDeadline: null });
+    await remove(ref(db, `rooms/${S.room}/claims`));
+  } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
+  S.busy = false; render();
+}
 async function pickCard(no){
   if (!S.room || !S.round || S.round.status !== 'joining') return;
   const owner = S.cards[no];
@@ -519,8 +530,10 @@ async function resolveClaims(){
     else newOut[cardNo] = true;
   });
   let updates;
+  const allCardNos = Object.keys(S.cards).map(Number);
+  const allOut = allCardNos.length > 0 && allCardNos.every((n) => newOut[n]);
   if (winners.length) updates = { status: 'done', out: newOut, result: { noWinner: false, winners }, claimDeadline: null };
-  else if (called.length >= 75) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [] }, claimDeadline: null };
+  else if (called.length >= 75 || allOut) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [] }, claimDeadline: null };
   else updates = { status: 'running', out: newOut, claimDeadline: null };
   try {
     await update(ref(db, `rooms/${S.room}/round`), updates);
@@ -707,7 +720,8 @@ function view(){
         mid = '<div class="panel"><div class="ballrow">' + callBallHTML(called) +
           '<div><b>' + esc(shapeOf(S.round.shape).name) + '</b><p class="muted">' + called.length + ' ከ75 ተጠርተዋል</p></div></div>' +
           (st === 'claim' ? '<div class="ok" style="margin-top:10px"><div class="cdbox"><span class="cdnum cdv">' + cdLeft() + '</span><span>BINGO ተብሏል፣ ማረጋገጫ በመካሄድ ላይ…</span></div></div>' : '') +
-          boardHTML(called) + '</div>';
+          boardHTML(called) +
+          '<button class="btn alt" data-a="resetround" style="margin-top:10px"' + (S.busy ? ' disabled' : '') + '>ዙሩን አቁም</button></div>';
       }
       return '<div class="hero"><h1>ክፍልህ ክፍት ነው</h1><p class="muted">ተጫዋቾች ይህን ኮድ ይጽፋሉ</p></div>' +
         '<div class="panel"><div class="roomcode" aria-label="የክፍል ኮድ">' + esc(S.room) + '</div></div>' +

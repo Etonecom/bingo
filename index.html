@@ -2,82 +2,94 @@
 <html lang="am">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ቢንጎ — የግንኙነት ሙከራ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ቢንጎ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F0F4EF; --surface:#FFFFFF; --surface2:#E3EAE2; --ink:#15231B; --muted:#5C6B62; --line:#D1DBD0;
-  --green:#0E6B3D; --green-ink:#FFFFFF; --gold:#E4A11B; --red:#C5352B;
-  --ok-bg:#E1F2E7; --bad-bg:#F9DEDA; --wait-bg:#FBEBD0;
+  --green:#0E6B3D; --green-ink:#FFFFFF; --gold:#E4A11B; --gold-ink:#2A1D00; --red:#C5352B;
+  --ok-bg:#E1F2E7; --bad-bg:#F9DEDA;
   --font:'Noto Sans Ethiopic','Abyssinica SIL','Nyala',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root{
     --bg:#101914; --surface:#18241D; --surface2:#22322A; --ink:#ECF2ED; --muted:#98A89E; --line:#2E4036;
-    --green:#3BB472; --green-ink:#052013; --gold:#F0B434; --red:#EE6C5F;
-    --ok-bg:#183524; --bad-bg:#3D1E1B; --wait-bg:#3B2E14;
+    --green:#3BB472; --green-ink:#052013; --gold:#F0B434; --gold-ink:#241800; --red:#EE6C5F;
+    --ok-bg:#183524; --bad-bg:#3D1E1B;
   }
 }
 *,*::before,*::after{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55}
-main{max-width:520px;margin:0 auto;padding:16px 14px 40px;display:flex;flex-direction:column;gap:12px}
-h1{font-size:22px;margin:4px 0 0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55;-webkit-tap-highlight-color:transparent;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button:disabled{opacity:.5;cursor:not-allowed}
+p{margin:.3rem 0}
+h1,h2{margin:0}
 .muted{color:var(--muted);font-size:14px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.status{display:flex;align-items:center;gap:10px;border-radius:10px;padding:10px 12px;background:var(--wait-bg)}
-.status.ok{background:var(--ok-bg)}
-.status.bad{background:var(--bad-bg)}
-.dot{width:12px;height:12px;border-radius:50%;background:var(--gold);flex:none}
-.status.ok .dot{background:var(--green)}
-.status.bad .dot{background:var(--red)}
-.status b{display:block}
-.status span{font-size:14px;color:var(--muted);word-break:break-word}
-label{display:block;font-weight:600;margin:8px 0 4px}
-input{width:100%;min-height:48px;border:2px solid var(--line);border-radius:10px;padding:8px 12px;font:inherit;background:var(--surface);color:var(--ink)}
-input:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-.btn{border:0;border-radius:10px;padding:12px 16px;min-height:48px;font:inherit;font-weight:700;background:var(--green);color:var(--green-ink);cursor:pointer;width:100%;margin-top:10px}
+
+/* ኳስ */
+.ball{width:112px;height:112px;border-radius:50%;background:var(--gold);color:var(--gold-ink);display:flex;align-items:center;justify-content:center;
+  border:6px solid var(--surface);box-shadow:0 0 0 3px var(--gold);font-size:58px;font-weight:800;line-height:1;flex:none}
+.ball.sm{width:80px;height:80px;border-width:4px;font-size:42px}
+
+/* የመክፈቻ ገጽ */
+.splash{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;
+  padding:env(safe-area-inset-top,0px) 16px calc(env(safe-area-inset-bottom,0px) + 28px);opacity:1;transition:opacity .5s ease}
+.splash.hide{opacity:0;pointer-events:none}
+.splash .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.splash h1{font-size:40px;font-weight:800}
+.splash .dev{font-size:15px;color:var(--muted);font-weight:600}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: no-preference){.splash .ball{animation:rise .7s ease both}.splash .dev{animation:rise .7s ease .5s both}}
+@media (prefers-reduced-motion: reduce){.splash{transition:none}}
+
+main{max-width:480px;margin:0 auto;padding:22px 16px 40px;display:flex;flex-direction:column;gap:14px;min-height:100vh}
+.hero{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 0 8px;text-align:center}
+.hero h1{font-size:32px;font-weight:800}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.panel h2{font-size:18px;font-weight:800;margin-bottom:6px}
+.btn{border:0;border-radius:12px;padding:14px 18px;min-height:56px;font-weight:800;font-size:18px;background:var(--green);color:var(--green-ink);width:100%}
 .btn.alt{background:var(--surface2);color:var(--ink)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-ul{list-style:none;margin:0;padding:0}
-li{padding:8px 0;border-top:1px solid var(--line)}
-li:first-child{border-top:0}
-li b{margin-inline-end:6px}
-li small{color:var(--muted)}
+.btn.ghost{background:transparent;color:var(--muted);font-weight:600;font-size:15px;min-height:44px}
+.btn.danger{background:var(--bad-bg);color:var(--red)}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input{width:100%;min-height:52px;border:2px solid var(--line);border-radius:12px;padding:8px 14px;background:var(--surface);color:var(--ink);font-size:18px}
+input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px}
+.err{background:var(--bad-bg);color:var(--red);border-radius:10px;padding:10px 12px;font-weight:600}
+.ok{background:var(--ok-bg);border-radius:10px;padding:10px 12px}
+.roomcode{font-size:64px;font-weight:800;letter-spacing:.18em;text-align:center;line-height:1.2;padding-inline-start:.18em}
+.plist{list-style:none;margin:8px 0 0;padding:0}
+.plist li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
+.plist li:first-child{border-top:0}
+.tag{font-size:12px;font-weight:700;background:var(--ok-bg);color:var(--green);border-radius:99px;padding:2px 10px}
+.dev-foot{margin-top:auto;text-align:center;color:var(--muted);font-size:13px;padding-top:18px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;font-weight:600;max-width:calc(100% - 28px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;text-align:center}
+.toast.show{opacity:1}
 </style>
 </head>
 <body>
-<main>
-  <h1>የግንኙነት ሙከራ</h1>
-  <p class="muted">ይህ ገጽ ከFirebase ጋር መነጋገሩን ብቻ ያረጋግጣል። ሁለት ስልክ (ወይም ሁለት ብሮውዘር) ላይ ከፍተህ አንዱ ላይ መልዕክት ላክ፤ በሌላው ላይ ወዲያው መታየት አለበት።</p>
 
-  <div class="status" id="s-db"><div class="dot"></div><div><b>ዳታቤዝ</b><span id="s-db-t">እየተገናኘ ነው…</span></div></div>
-  <div class="status" id="s-auth"><div class="dot"></div><div><b>መግቢያ (ስም-አልባ)</b><span id="s-auth-t">እየገባ ነው…</span></div></div>
+<div class="splash" id="splash" aria-live="polite">
+  <div class="mid">
+    <div class="ball" aria-hidden="true">B</div>
+    <h1>ቢንጎ</h1>
+  </div>
+  <div class="dev">Developed by Andualem</div>
+</div>
 
-  <section class="panel">
-    <label for="name">ስምህ</label>
-    <input id="name" maxlength="20" placeholder="ለምሳሌ አንዱዓለም" autocomplete="off">
-    <label for="msg">መልዕክት</label>
-    <input id="msg" maxlength="80" placeholder="ሰላም!" autocomplete="off">
-    <button class="btn" id="send">ላክ</button>
-    <p class="muted" id="send-note"></p>
-  </section>
-
-  <section class="panel">
-    <b>የተላኩ መልዕክቶች</b>
-    <ul id="list"><li class="muted">እስካሁን ምንም የለም።</li></ul>
-    <button class="btn alt" id="clear">ሁሉንም አጥፋ</button>
-  </section>
-
-  <p class="muted">የሙከራ ገጽ፣ ስሪት 1</p>
-</main>
+<main id="app"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, push, remove, onValue, serverTimestamp, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCzg6CzEz9e4Q9icfdoegSZkJh-TQjqIgc",
@@ -89,86 +101,299 @@ const firebaseConfig = {
   appId: "1:656225626762:web:4c80ead178e340f24e9b73"
 };
 
-const $ = (id) => document.getElementById(id);
-function setStatus(id, kind, text){
-  const box = $(id), t = $(id + '-t');
-  box.className = 'status' + (kind ? ' ' + kind : '');
-  t.textContent = text;
-}
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-/* 1. የዳታቤዝ ግንኙነት */
-onValue(ref(db, '.info/connected'), (snap) => {
-  if (snap.val() === true) setStatus('s-db', 'ok', 'ተገናኝቷል');
-  else setStatus('s-db', '', 'እየተገናኘ ነው… ኢንተርኔትህን ተመልከት።');
-});
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ls = {
+  get(k){ try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k){ try { localStorage.removeItem(k); } catch (e) {} }
+};
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
+}
 
-/* 2. ስም-አልባ መግቢያ */
-let myUid = null;
-signInAnonymously(auth).then((cred) => {
-  myUid = cred.user.uid;
-  setStatus('s-auth', 'ok', 'ገብቷል። የአንተ መለያ፦ ' + myUid.slice(0, 8) + '…');
-}).catch((err) => {
-  if (err.code === 'auth/operation-not-allowed' || err.code === 'auth/admin-restricted-operation'){
-    setStatus('s-auth', 'bad', 'ስም-አልባ መግቢያ አልበራም። Firebase → Build → Authentication → Sign-in method → Anonymous ን አብራ።');
-  } else {
-    setStatus('s-auth', 'bad', 'ስህተት፦ ' + (err.code || err.message));
-  }
-});
+/* ---------- ሁኔታ ---------- */
+const S = {
+  screen: 'loading',      // loading | role | player | callerCode | callerHome | lobbyCaller | lobbyPlayer | fatal
+  uid: null, isCaller: false,
+  room: null, meta: null, players: {},
+  form: { name: ls.get('bingo_name') || '', room: '', code: '' },
+  busy: false, err: ''
+};
+let unsubs = [];
+function unsubscribeAll(){ unsubs.forEach((f) => { try { f(); } catch (e) {} }); unsubs = []; }
 
-/* 3. መልዕክቶችን በቀጥታ ማንበብ */
-const msgsRef = ref(db, 'test/messages');
-onValue(query(msgsRef, limitToLast(20)), (snap) => {
-  const list = $('list');
-  list.textContent = '';
-  const items = [];
-  snap.forEach((child) => { items.push(child.val()); });
-  if (!items.length){
-    const li = document.createElement('li');
-    li.className = 'muted';
-    li.textContent = 'እስካሁን ምንም የለም።';
-    list.appendChild(li);
+function isDenied(err){ return err && (err.code === 'PERMISSION_DENIED' || /permission/i.test(err.message || '') || /permission/i.test(err.code || '')); }
+
+/* ---------- መጀመሪያ ---------- */
+async function boot(){
+  try {
+    const res = await Promise.all([signInAnonymously(auth), delay(2200)]);
+    S.uid = res[0].user.uid;
+  } catch (err) {
+    hideSplash();
+    S.screen = 'fatal';
+    S.err = err.code || err.message || 'unknown';
+    render();
     return;
   }
-  items.forEach((m) => {
-    const li = document.createElement('li');
-    const b = document.createElement('b');
-    b.textContent = m.name || 'ስም-አልባ';
-    const span = document.createElement('span');
-    span.textContent = m.text || '';
-    const small = document.createElement('small');
-    small.textContent = m.t ? ' · ' + new Date(m.t).toLocaleTimeString('am-ET', { hour: '2-digit', minute: '2-digit' }) : '';
-    li.append(b, span, small);
-    list.appendChild(li);
-  });
-}, (err) => {
-  setStatus('s-db', 'bad', 'ማንበብ አልተቻለም፦ ' + (err.code || err.message) + ' (የዳታቤዙ ደንብ ሊሆን ይችላል)');
-});
-
-/* 4. መልዕክት መላክ */
-$('send').addEventListener('click', async () => {
-  const name = $('name').value.trim();
-  const text = $('msg').value.trim();
-  const note = $('send-note');
-  note.textContent = '';
-  if (!name || !text){ note.textContent = 'ስምና መልዕክት ሁለቱንም ጻፍ።'; return; }
-  $('send').disabled = true;
+  await restore();
+  hideSplash();
+  render();
+}
+function hideSplash(){
+  const s = $('splash');
+  s.classList.add('hide');
+  setTimeout(() => { s.style.display = 'none'; }, 600);
+}
+async function checkCaller(){
+  try { const s = await get(ref(db, 'callers/' + S.uid)); return s.exists(); } catch (e) { return false; }
+}
+async function enterExistingRoom(code, owner){
   try {
-    await push(msgsRef, { name, text, t: serverTimestamp(), uid: myUid });
-    $('msg').value = '';
-    note.textContent = 'ተልኳል።';
-  } catch (err) {
-    note.textContent = 'መላክ አልተቻለም፦ ' + (err.code || err.message);
+    const m = await get(ref(db, `rooms/${code}/meta`));
+    if (!m.exists()) { ls.del('bingo_room'); return false; }
+    if (owner && m.val().owner !== S.uid) { ls.del('bingo_room'); return false; }
+    if (!owner) {
+      const me = await get(ref(db, `rooms/${code}/players/${S.uid}`));
+      if (!me.exists()) { ls.del('bingo_room'); return false; }
+    }
+    S.room = code;
+    subscribeRoom(code);
+    S.screen = owner ? 'lobbyCaller' : 'lobbyPlayer';
+    return true;
+  } catch (e) { ls.del('bingo_room'); return false; }
+}
+async function restore(){
+  const role = ls.get('bingo_role'), room = ls.get('bingo_room');
+  if (role === 'caller') {
+    S.isCaller = await checkCaller();
+    if (!S.isCaller) { ls.del('bingo_room'); S.screen = 'callerCode'; return; }
+    if (room && await enterExistingRoom(room, true)) return;
+    S.screen = 'callerHome';
+    return;
   }
-  $('send').disabled = false;
+  if (role === 'player') {
+    if (room && await enterExistingRoom(room, false)) return;
+    S.screen = 'player';
+    return;
+  }
+  S.screen = 'role';
+}
+
+/* ---------- ክፍል መከታተል ---------- */
+function subscribeRoom(code){
+  unsubscribeAll();
+  unsubs.push(onValue(ref(db, `rooms/${code}/meta`), (snap) => {
+    if (!snap.exists()) { roomGone(); return; }
+    S.meta = snap.val();
+    render();
+  }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/players`), (snap) => {
+    S.players = snap.val() || {};
+    render();
+  }));
+}
+function roomGone(){
+  if (S.screen === 'lobbyPlayer') {
+    toast('አጫዋቹ ክፍሉን ዘግቷል');
+    leaveLocal();
+    S.screen = 'player';
+    render();
+  }
+}
+function leaveLocal(){
+  unsubscribeAll();
+  ls.del('bingo_room');
+  S.room = null; S.meta = null; S.players = {};
+}
+
+/* ---------- ድርጊቶች ---------- */
+function setErr(msg){ S.err = msg; render(); }
+
+async function startCaller(){
+  ls.set('bingo_role', 'caller');
+  S.err = ''; S.busy = true; render();
+  S.isCaller = await checkCaller();
+  S.busy = false;
+  S.screen = S.isCaller ? 'callerHome' : 'callerCode';
+  render();
+}
+async function redeemCode(){
+  const code = (S.form.code || '').trim();
+  if (!/^[A-Z0-9]{4,24}$/.test(code)) return setErr('ኮዱን በትክክል ጻፍ (ፊደልና ቁጥር ብቻ)።');
+  S.busy = true; S.err = ''; render();
+  try {
+    await update(ref(db), {
+      ['callers/' + S.uid]: { code: code, at: serverTimestamp() },
+      ['activationCodes/' + code + '/usedBy']: S.uid
+    });
+    S.isCaller = true; S.screen = 'callerHome'; S.form.code = '';
+  } catch (err) {
+    S.err = isDenied(err) ? 'ኮዱ ትክክል አይደለም ወይም ቀድሞ ተጠቅሟል።' : 'ስህተት፦ ' + (err.code || err.message);
+  }
+  S.busy = false; render();
+}
+async function openRoom(){
+  S.busy = true; S.err = ''; render();
+  try {
+    let code = null;
+    for (let i = 0; i < 12; i++) {
+      const c = String(Math.floor(1000 + Math.random() * 9000));
+      const s = await get(ref(db, `rooms/${c}/meta`));
+      if (!s.exists()) { code = c; break; }
+    }
+    if (!code) throw { code: 'busy' };
+    await set(ref(db, `rooms/${code}/meta`), { owner: S.uid, createdAt: serverTimestamp(), status: 'open' });
+    ls.set('bingo_room', code);
+    S.room = code; subscribeRoom(code); S.screen = 'lobbyCaller';
+  } catch (err) {
+    S.err = isDenied(err) ? 'አጫዋች ለመሆን መጀመሪያ ኮድ ማስገባት አለብህ።' : 'ክፍል መክፈት አልተቻለም፦ ' + (err.code || err.message);
+  }
+  S.busy = false; render();
+}
+async function closeRoom(){
+  if (!S.room) return;
+  if (!confirm('ክፍሉን ልዝጋው? ሁሉም ተጫዋች ይወጣል።')) return;
+  const code = S.room;
+  unsubscribeAll();
+  try { await remove(ref(db, 'rooms/' + code)); } catch (err) { toast('መዝጋት አልተቻለም፦ ' + (err.code || err.message)); }
+  leaveLocal();
+  S.screen = 'callerHome';
+  render();
+}
+async function joinRoom(){
+  const name = (S.form.name || '').trim(), code = (S.form.room || '').trim();
+  if (!name) return setErr('ስምህን ጻፍ።');
+  if (!/^\d{4}$/.test(code)) return setErr('የክፍሉን የ4 አሃዝ ኮድ ጻፍ።');
+  S.busy = true; S.err = ''; render();
+  try {
+    const meta = await get(ref(db, `rooms/${code}/meta`));
+    if (!meta.exists()) throw { code: 'no-room' };
+    await set(ref(db, `rooms/${code}/players/${S.uid}`), { name: name, joinedAt: serverTimestamp() });
+    ls.set('bingo_name', name); ls.set('bingo_room', code);
+    S.room = code; subscribeRoom(code); S.screen = 'lobbyPlayer';
+  } catch (err) {
+    S.err = err.code === 'no-room' ? 'ይህ ክፍል አልተገኘም። ኮዱን አጫዋቹን ጠይቅ።' : 'መግባት አልተቻለም፦ ' + (err.code || err.message);
+  }
+  S.busy = false; render();
+}
+async function leaveRoom(){
+  const code = S.room;
+  unsubscribeAll();
+  try { await remove(ref(db, `rooms/${code}/players/${S.uid}`)); } catch (e) {}
+  leaveLocal();
+  S.screen = 'player';
+  render();
+}
+
+function act(a){
+  S.err = '';
+  if (a === 'role-player') { ls.set('bingo_role', 'player'); S.screen = 'player'; }
+  else if (a === 'role-caller') { startCaller(); return; }
+  else if (a === 'back') { ls.del('bingo_role'); S.screen = 'role'; }
+  else if (a === 'join') { joinRoom(); return; }
+  else if (a === 'redeem') { redeemCode(); return; }
+  else if (a === 'openroom') { openRoom(); return; }
+  else if (a === 'closeroom') { closeRoom(); return; }
+  else if (a === 'leave') { leaveRoom(); return; }
+  render();
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-a]');
+  if (!b || b.disabled) return;
+  act(b.dataset.a);
+});
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (!t.dataset || !t.dataset.f) return;
+  if (t.dataset.f === 'room') t.value = t.value.replace(/\D/g, '').slice(0, 4);
+  if (t.dataset.f === 'code') t.value = t.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24);
+  S.form[t.dataset.f] = t.value;
 });
 
-$('clear').addEventListener('click', async () => {
-  try { await remove(msgsRef); } catch (err) { $('send-note').textContent = 'ማጥፋት አልተቻለም፦ ' + (err.code || err.message); }
-});
+/* ---------- ስዕል ---------- */
+const foot = '<div class="dev-foot">Developed by Andualem</div>';
+const errBox = () => S.err ? '<div class="err" role="alert">' + esc(S.err) + '</div>' : '';
+function playerList(){
+  const entries = Object.keys(S.players).map((id) => ({ id: id, p: S.players[id] }));
+  entries.sort((a, b) => (a.p.joinedAt || 0) - (b.p.joinedAt || 0));
+  if (!entries.length) return '<p class="muted">እስካሁን ማንም አልገባም።</p>';
+  return '<ul class="plist">' + entries.map((x) =>
+    '<li><span>' + esc(x.p.name || 'ስም-አልባ') + '</span>' + (x.id === S.uid ? '<span class="tag">አንተ</span>' : '') + '</li>').join('') + '</ul>';
+}
+function view(){
+  const dis = S.busy ? ' disabled' : '';
+  switch (S.screen) {
+    case 'fatal':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ግንኙነት አልተሳካም</h1></div>' +
+        '<div class="err">ስህተት፦ ' + esc(S.err) + '</div>' +
+        '<div class="panel"><p>ኢንተርኔትህን አረጋግጥ፣ ከዚያ ገጹን አድስ።</p>' +
+        (S.err.indexOf('operation-not-allowed') >= 0 ? '<p class="muted">Firebase → Authentication → Sign-in method → Anonymous መብራቱን አረጋግጥ።</p>' : '') + '</div>' + foot;
+    case 'role':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ቢንጎ</h1><p class="muted">በአንድ ቦታ ለተሰበሰቡ ጓደኞች</p></div>' +
+        '<button class="btn" data-a="role-player">ተጫዋች ነኝ</button>' +
+        '<button class="btn alt" data-a="role-caller">አጫዋች ነኝ</button>' + foot;
+    case 'player':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ክፍል ግባ</h1></div>' +
+        '<div class="panel"><label for="f-name">ስምህ</label>' +
+        '<input id="f-name" data-f="name" maxlength="20" autocomplete="off" placeholder="ለምሳሌ ሰላም" value="' + esc(S.form.name) + '">' +
+        '<label for="f-room">የክፍል ኮድ (4 አሃዝ)</label>' +
+        '<input id="f-room" class="code" data-f="room" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000" value="' + esc(S.form.room) + '"></div>' +
+        errBox() +
+        '<button class="btn" data-a="join"' + dis + '>' + (S.busy ? 'እየገባ ነው…' : 'ግባ') + '</button>' +
+        '<button class="btn ghost" data-a="back">ወደ ኋላ</button>' + foot;
+    case 'callerCode':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>አጫዋች ለመሆን</h1></div>' +
+        '<div class="panel"><p>አጫዋች ለመሆን አንድ የማግበሪያ ኮድ ያስፈልጋል። ኮዱን የሚሰጠው የአፑ ባለቤት ብቻ ነው።</p>' +
+        '<label for="f-code">የማግበሪያ ኮድ</label>' +
+        '<input id="f-code" class="code" data-f="code" maxlength="24" autocomplete="off" autocapitalize="characters" value="' + esc(S.form.code) + '"></div>' +
+        errBox() +
+        '<button class="btn" data-a="redeem"' + dis + '>' + (S.busy ? 'እየተረጋገጠ ነው…' : 'አግብር') + '</button>' +
+        '<button class="btn ghost" data-a="back">ወደ ኋላ</button>' + foot;
+    case 'callerHome':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>እንኳን ደህና መጣህ፣ አጫዋች</h1></div>' +
+        '<div class="panel"><p>አዲስ ክፍል ስትከፍት የ4 አሃዝ ኮድ ይሰጥሃል። ተጫዋቾች ያንን ኮድ ጽፈው ይገባሉ።</p></div>' +
+        errBox() +
+        '<button class="btn" data-a="openroom"' + dis + '>' + (S.busy ? 'እየተከፈተ ነው…' : 'አዲስ ክፍል ክፈት') + '</button>' +
+        '<button class="btn ghost" data-a="back">ወደ መጀመሪያ ገጽ</button>' + foot;
+    case 'lobbyCaller': {
+      const n = Object.keys(S.players).length;
+      return '<div class="hero"><h1>ክፍልህ ክፍት ነው</h1><p class="muted">ተጫዋቾች ይህን ኮድ ይጽፋሉ</p></div>' +
+        '<div class="panel"><div class="roomcode" aria-label="የክፍል ኮድ">' + esc(S.room) + '</div></div>' +
+        '<div class="panel"><h2>ተጫዋቾች (' + n + ')</h2>' + playerList() + '</div>' +
+        '<div class="ok"><p>ዙር መክፈት በሚቀጥለው ደረጃ ይመጣል።</p></div>' +
+        '<button class="btn danger" data-a="closeroom">ክፍሉን ዝጋ</button>' + foot;
+    }
+    case 'lobbyPlayer': {
+      const n = Object.keys(S.players).length;
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ገብተሃል</h1><p class="muted">ክፍል ' + esc(S.room) + '</p></div>' +
+        '<div class="ok"><p>አጫዋቹ ዙር እስኪከፍት ጠብቅ።</p></div>' +
+        '<div class="panel"><h2>በክፍሉ ውስጥ (' + n + ')</h2>' + playerList() + '</div>' +
+        '<button class="btn ghost" data-a="leave">ከክፍሉ ውጣ</button>' + foot;
+    }
+    default:
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><p class="muted">እየተጫነ ነው…</p></div>';
+  }
+}
+function render(){
+  const a = document.activeElement;
+  const keep = a && a.dataset && a.dataset.f ? { f: a.dataset.f, s: a.selectionStart } : null;
+  $('app').innerHTML = view();
+  if (keep) {
+    const el = document.querySelector('[data-f="' + keep.f + '"]');
+    if (el) { try { el.focus(); if (keep.s != null) el.setSelectionRange(keep.s, keep.s); } catch (e) {} }
+  }
+}
+
+render();
+boot();
 </script>
 </body>
 </html>

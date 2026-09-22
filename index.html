@@ -68,6 +68,21 @@ input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px
 .plist li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
 .plist li:first-child{border-top:0}
 .tag{font-size:12px;font-weight:700;background:var(--ok-bg);color:var(--green);border-radius:99px;padding:2px 10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.opt{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 6px;min-height:48px;font-weight:700;text-align:center}
+.opt.on{border-color:var(--green);background:var(--ok-bg)}
+.shapebtn{display:block;width:100%;text-align:start;border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;min-height:52px;margin-top:8px}
+.shapebtn b{display:block;font-size:15px}
+.shapebtn span{font-size:13px;color:var(--muted)}
+.shapebtn.on{border-color:var(--green);background:var(--ok-bg)}
+.pick{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.pick button{min-height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-weight:700}
+.pick button.mine{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.pick button.taken{background:var(--surface2);color:var(--muted);border-style:dashed}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}
+.stat3 div{background:var(--surface2);border-radius:10px;padding:8px 6px;text-align:center}
+.stat3 small{display:block;color:var(--muted);font-size:11px}
+.stat3 b{font-size:16px}
 .dev-foot{margin-top:auto;text-align:center;color:var(--muted);font-size:13px;padding-top:18px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;font-weight:600;max-width:calc(100% - 28px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;text-align:center}
 .toast.show{opacity:1}
@@ -105,6 +120,19 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
+const CARD_COUNT = 30;
+const FEES = [50, 100, 150, 200, 300, 400, 500, 1000];
+const SHAPES = [
+  { id: 'line', name: 'አንድ መስመር', hint: 'አንድ አግድም ወይም አንድ ቋሚ መስመር' },
+  { id: 'two', name: 'ሁለት መስመር (ማንኛውም)', hint: 'ማንኛውም ሁለት መስመሮች፣ አግድምም ቋሚም ሊሆኑ ይችላሉ' },
+  { id: 'twoV', name: 'ሁለት ቋሚ መስመር', hint: 'ማንኛውም ሁለት ቋሚ መስመሮች' },
+  { id: 'twoH', name: 'ሁለት አግድም መስመር', hint: 'ማንኛውም ሁለት አግድም መስመሮች' },
+  { id: 'x', name: 'X', hint: 'ሁለቱም ሰያፍ መስመሮች' },
+  { id: 'square', name: 'ካሬ', hint: 'የካርዱ አራቱም ዳርቻ (16 ሳጥኖች)' },
+  { id: 'full', name: 'ሙሉ ካርድ', hint: 'ሁሉም ሳጥኖች ሲሞሉ' }
+];
+function shapeOf(id){ return SHAPES.find((s) => s.id === id) || SHAPES[0]; }
+
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const ls = {
@@ -122,7 +150,8 @@ function toast(msg){
 const S = {
   screen: 'loading',      // loading | role | player | callerCode | callerHome | lobbyCaller | lobbyPlayer | fatal
   uid: null, isCaller: false,
-  room: null, meta: null, players: {},
+  room: null, meta: null, players: {}, round: null, cards: {},
+  roundForm: { shape: 'line', fee: 100 },
   form: { name: ls.get('bingo_name') || '', room: '', code: '' },
   busy: false, err: ''
 };
@@ -199,6 +228,14 @@ function subscribeRoom(code){
     S.players = snap.val() || {};
     render();
   }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/round`), (snap) => {
+    S.round = snap.exists() ? snap.val() : null;
+    render();
+  }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/cards`), (snap) => {
+    S.cards = snap.val() || {};
+    render();
+  }));
 }
 function roomGone(){
   if (S.screen === 'lobbyPlayer') {
@@ -211,7 +248,7 @@ function roomGone(){
 function leaveLocal(){
   unsubscribeAll();
   ls.del('bingo_room');
-  S.room = null; S.meta = null; S.players = {};
+  S.room = null; S.meta = null; S.players = {}; S.round = null; S.cards = {};
 }
 
 /* ---------- ድርጊቶች ---------- */
@@ -293,7 +330,35 @@ async function leaveRoom(){
   render();
 }
 
-function act(a){
+async function openRound(){
+  if (!S.room) return;
+  S.busy = true; render();
+  try {
+    await set(ref(db, `rooms/${S.room}/round`), { shape: S.roundForm.shape, fee: S.roundForm.fee, status: 'joining', openedAt: serverTimestamp() });
+    await remove(ref(db, `rooms/${S.room}/cards`));
+  } catch (err) { toast('ዙር መክፈት አልተቻለም፦ ' + (err.code || err.message)); }
+  S.busy = false; render();
+}
+async function resetRound(){
+  if (!S.room) return;
+  if (!confirm('ይህን ዙር ልሰርዘው? የተያዙ ካርዶች ይለቀቃሉ።')) return;
+  S.busy = true; render();
+  try {
+    await remove(ref(db, `rooms/${S.room}/round`));
+    await remove(ref(db, `rooms/${S.room}/cards`));
+  } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
+  S.busy = false; render();
+}
+async function pickCard(no){
+  if (!S.room || !S.round || S.round.status !== 'joining') return;
+  const owner = S.cards[no];
+  try {
+    if (owner === S.uid) await remove(ref(db, `rooms/${S.room}/cards/${no}`));
+    else if (!owner) await set(ref(db, `rooms/${S.room}/cards/${no}`), S.uid);
+  } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
+}
+
+function act(a, d){
   S.err = '';
   if (a === 'role-player') { ls.set('bingo_role', 'player'); S.screen = 'player'; }
   else if (a === 'role-caller') { startCaller(); return; }
@@ -303,12 +368,17 @@ function act(a){
   else if (a === 'openroom') { openRoom(); return; }
   else if (a === 'closeroom') { closeRoom(); return; }
   else if (a === 'leave') { leaveRoom(); return; }
+  else if (a === 'shape') { S.roundForm.shape = d.v; }
+  else if (a === 'fee') { S.roundForm.fee = +d.v; }
+  else if (a === 'openround') { openRound(); return; }
+  else if (a === 'resetround') { resetRound(); return; }
+  else if (a === 'pickcard') { pickCard(+d.n); return; }
   render();
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-a]');
   if (!b || b.disabled) return;
-  act(b.dataset.a);
+  act(b.dataset.a, b.dataset);
 });
 document.addEventListener('input', (e) => {
   const t = e.target;
@@ -365,16 +435,51 @@ function view(){
         '<button class="btn ghost" data-a="back">ወደ መጀመሪያ ገጽ</button>' + foot;
     case 'lobbyCaller': {
       const n = Object.keys(S.players).length;
+      const live = S.round && S.round.status === 'joining';
+      let mid;
+      if (!live) {
+        mid = '<div class="panel"><h2>ዙር ክፈት</h2>' +
+          '<label>ቅርጽ</label>' +
+          SHAPES.map((s) => '<button class="shapebtn' + (S.roundForm.shape === s.id ? ' on' : '') + '" data-a="shape" data-v="' + s.id + '"><b>' + esc(s.name) + '</b><span>' + esc(s.hint) + '</span></button>').join('') +
+          '<label>የካርድ ዋጋ (ኮይን)</label><div class="grid4">' +
+          FEES.map((v) => '<button class="opt' + (S.roundForm.fee === v ? ' on' : '') + '" data-a="fee" data-v="' + v + '">' + v + '</button>').join('') + '</div>' +
+          '<button class="btn" data-a="openround" style="margin-top:14px"' + (S.busy ? ' disabled' : '') + '>' + (S.busy ? 'እየተከፈተ ነው…' : 'ዙር ክፈት') + '</button></div>';
+      } else {
+        const taken = Object.keys(S.cards).length, pot = taken * S.round.fee;
+        mid = '<div class="panel"><h2>ዙር ክፍት ነው</h2>' +
+          '<div class="stat3"><div><small>ቅርጽ</small><b>' + esc(shapeOf(S.round.shape).name) + '</b></div>' +
+          '<div><small>የካርድ ዋጋ</small><b>' + S.round.fee + '</b></div>' +
+          '<div><small>የተያዙ ካርዶች</small><b>' + taken + '</b></div></div>' +
+          '<p class="muted">ጠቅላላ፦ ' + pot + ' ኮይን። ተጫዋቾች «ተጫዋች» ገጻቸው ላይ ካርድ እየመረጡ ነው። የቁጥር ጥሪ በሚቀጥለው ደረጃ ይመጣል።</p>' +
+          '<button class="btn alt" data-a="resetround" style="margin-top:10px"' + (S.busy ? ' disabled' : '') + '>ዙሩን ሰርዝ</button></div>';
+      }
       return '<div class="hero"><h1>ክፍልህ ክፍት ነው</h1><p class="muted">ተጫዋቾች ይህን ኮድ ይጽፋሉ</p></div>' +
         '<div class="panel"><div class="roomcode" aria-label="የክፍል ኮድ">' + esc(S.room) + '</div></div>' +
+        mid +
         '<div class="panel"><h2>ተጫዋቾች (' + n + ')</h2>' + playerList() + '</div>' +
-        '<div class="ok"><p>ዙር መክፈት በሚቀጥለው ደረጃ ይመጣል።</p></div>' +
         '<button class="btn danger" data-a="closeroom">ክፍሉን ዝጋ</button>' + foot;
     }
     case 'lobbyPlayer': {
       const n = Object.keys(S.players).length;
+      const live = S.round && S.round.status === 'joining';
+      let mid;
+      if (!live) {
+        mid = '<div class="ok"><p>አጫዋቹ ዙር እስኪከፍት ጠብቅ።</p></div>';
+      } else {
+        const sh = shapeOf(S.round.shape);
+        const mine = Object.keys(S.cards).filter((k) => S.cards[k] === S.uid);
+        let cells = '';
+        for (let no = 1; no <= CARD_COUNT; no++) {
+          const owner = S.cards[no];
+          const cls = owner === S.uid ? 'mine' : (owner ? 'taken' : '');
+          cells += '<button class="' + cls + '" data-a="pickcard" data-n="' + no + '"' + (owner && owner !== S.uid ? ' disabled' : '') + '>' + no + '</button>';
+        }
+        mid = '<div class="panel"><h2>ቅርጽ፦ ' + esc(sh.name) + '</h2><p class="muted">' + esc(sh.hint) + '</p>' +
+          '<p>የካርድ ዋጋ፦ <b>' + S.round.fee + ' ኮይን</b>' + (mine.length ? ' · የያዝካቸው፦ ' + mine.map((c) => '#' + c).join(', ') : '') + '</p></div>' +
+          '<div class="panel"><h2>ካርድ ምረጥ</h2><p class="muted">የተያዘ ካርድ ለሌላ ሰው አይሰጥም። የያዝከውን ድጋሚ ብትነካው ትለቀዋለህ።</p><div class="pick">' + cells + '</div></div>';
+      }
       return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ገብተሃል</h1><p class="muted">ክፍል ' + esc(S.room) + '</p></div>' +
-        '<div class="ok"><p>አጫዋቹ ዙር እስኪከፍት ጠብቅ።</p></div>' +
+        mid +
         '<div class="panel"><h2>በክፍሉ ውስጥ (' + n + ')</h2>' + playerList() + '</div>' +
         '<button class="btn ghost" data-a="leave">ከክፍሉ ውጣ</button>' + foot;
     }

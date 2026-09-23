@@ -11,14 +11,14 @@
 :root{
   --bg:#F0F4EF; --surface:#FFFFFF; --surface2:#E3EAE2; --ink:#15231B; --muted:#5C6B62; --line:#D1DBD0;
   --green:#0E6B3D; --green-ink:#FFFFFF; --gold:#E4A11B; --gold-ink:#2A1D00; --red:#C5352B;
-  --ok-bg:#E1F2E7; --bad-bg:#F9DEDA;
+  --ok-bg:#E1F2E7; --bad-bg:#F9DEDA; --warn-bg:#FBEBD0;
   --font:'Noto Sans Ethiopic','Abyssinica SIL','Nyala',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root{
     --bg:#101914; --surface:#18241D; --surface2:#22322A; --ink:#ECF2ED; --muted:#98A89E; --line:#2E4036;
     --green:#3BB472; --green-ink:#052013; --gold:#F0B434; --gold-ink:#241800; --red:#EE6C5F;
-    --ok-bg:#183524; --bad-bg:#3D1E1B;
+    --ok-bg:#183524; --bad-bg:#3D1E1B; --warn-bg:#3B2E14;
   }
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -54,6 +54,9 @@ main{max-width:480px;margin:0 auto;padding:22px 16px 40px;display:flex;flex-dire
 .hero h1{font-size:32px;font-weight:800}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
 .panel h2{font-size:18px;font-weight:800;margin-bottom:6px}
+.panel.ok{background:var(--ok-bg);border-color:var(--green)}
+.panel.warn{background:var(--warn-bg);border-color:var(--gold)}
+.namelist{margin:6px 0 0;font-size:14px;color:var(--muted)}
 .btn{border:0;border-radius:12px;padding:14px 18px;min-height:56px;font-weight:800;font-size:18px;background:var(--green);color:var(--green-ink);width:100%}
 .btn.alt{background:var(--surface2);color:var(--ink)}
 .btn.ghost{background:transparent;color:var(--muted);font-weight:600;font-size:15px;min-height:44px}
@@ -314,8 +317,10 @@ async function restore(){
 }
 
 /* ---------- ክፍል መከታተል ---------- */
+let lastRoundStatus;
 function subscribeRoom(code){
   unsubscribeAll();
+  lastRoundStatus = undefined;
   unsubs.push(onValue(ref(db, `rooms/${code}/meta`), (snap) => {
     if (!snap.exists()) { roomGone(); return; }
     S.meta = snap.val();
@@ -326,7 +331,13 @@ function subscribeRoom(code){
     render();
   }));
   unsubs.push(onValue(ref(db, `rooms/${code}/round`), (snap) => {
-    S.round = snap.exists() ? snap.val() : null;
+    const existed = snap.exists();
+    const newStatus = existed ? snap.val().status : null;
+    if (!S.isCaller && ['running', 'claim', 'joining'].indexOf(lastRoundStatus) !== -1 && !existed) {
+      toast('አጫዋቹ ዙሩን አቁሟል');
+    }
+    lastRoundStatus = newStatus;
+    S.round = existed ? snap.val() : null;
     render();
   }));
   unsubs.push(onValue(ref(db, `rooms/${code}/cards`), (snap) => {
@@ -351,6 +362,7 @@ function leaveLocal(){
   unsubscribeAll();
   ls.del('bingo_room');
   S.room = null; S.meta = null; S.players = {}; S.round = null; S.cards = {}; S.claims = {}; S.marks = {}; S.chooser = false;
+  lastRoundStatus = undefined;
   stopCallerTimers();
 }
 
@@ -461,7 +473,7 @@ async function stopRound(){
   stopCallerTimers();
   S.busy = true; render();
   try {
-    await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], stopped: true }, claimDeadline: null });
+    await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], reason: 'cancelled' }, claimDeadline: null });
     await remove(ref(db, `rooms/${S.room}/claims`));
   } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
   S.busy = false; render();
@@ -504,7 +516,7 @@ async function drawNext(){
 }
 async function finalizeNoWinner(){
   if (!S.room) return;
-  try { await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [] } }); } catch (err) {}
+  try { await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], reason: 'exhausted' } }); } catch (err) {}
 }
 function onClaimsChanged(){
   if (!S.isCaller || !S.round) return;
@@ -521,20 +533,29 @@ async function resolveClaims(){
   const called = S.round.called || [];
   const newOut = Object.assign({}, S.round.out || {});
   const winners = [];
+  const notes = [];
+  const nameOf = (uid) => (S.players[uid] && S.players[uid].name) || 'ተጫዋች';
   Object.keys(S.claims).forEach((cid) => {
     const c = S.claims[cid];
     const cardNo = +c.card;
     if (S.cards[cardNo] !== c.uid) return;          // ካርዱ የእሱ አይደለም (spoof) — ችላ በል
     if (newOut[cardNo]) return;                       // ቀድሞ ከዙሩ ወጥቷል
-    if (winsOnLast(cardOf(cardNo), S.round.shape, called)) winners.push({ card: cardNo, uid: c.uid });
-    else newOut[cardNo] = true;
+    if (winsOnLast(cardOf(cardNo), S.round.shape, called)) {
+      winners.push({ card: cardNo, uid: c.uid });
+      notes.push(nameOf(c.uid) + ' ካርድ #' + cardNo + ' በትክክል አሸንፏል!');
+    } else {
+      newOut[cardNo] = true;
+      notes.push(nameOf(c.uid) + ' ካርድ #' + cardNo + ' ላይ ተሳስቶ BINGO ብሏል፤ ካርዱ ከዙሩ ወጥቷል።');
+    }
   });
+  const note = notes.length ? notes.join(' · ') : null;
   let updates;
   const allCardNos = Object.keys(S.cards).map(Number);
   const allOut = allCardNos.length > 0 && allCardNos.every((n) => newOut[n]);
-  if (winners.length) updates = { status: 'done', out: newOut, result: { noWinner: false, winners }, claimDeadline: null };
-  else if (called.length >= 75 || allOut) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [] }, claimDeadline: null };
-  else updates = { status: 'running', out: newOut, claimDeadline: null };
+  if (winners.length) updates = { status: 'done', out: newOut, result: { noWinner: false, winners }, claimDeadline: null, note: note };
+  else if (allOut) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'allOut' }, claimDeadline: null, note: note };
+  else if (called.length >= 75) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'exhausted' }, claimDeadline: null, note: note };
+  else updates = { status: 'running', out: newOut, claimDeadline: null, note: note };
   try {
     await update(ref(db, `rooms/${S.room}/round`), updates);
     await remove(ref(db, `rooms/${S.room}/claims`));
@@ -584,6 +605,7 @@ function act(a, d){
   else if (a === 'fee') { S.roundForm.fee = +d.v; }
   else if (a === 'openround') { openRound(); return; }
   else if (a === 'resetround') { resetRound(); return; }
+  else if (a === 'stopround') { stopRound(); return; }
   else if (a === 'pickcard') { pickCard(+d.n); return; }
   else if (a === 'startgame') { startCalling(); return; }
   else if (a === 'newround') { S.round && stopCallerTimers(); remove(ref(db, `rooms/${S.room}/round`)).catch(() => {}); return; }
@@ -647,13 +669,29 @@ function cardBoxHTML(no){
   if (out) h += '<div class="stamp"><span>ከዙሩ ወጥቷል</span></div>';
   return h + '</div>';
 }
+function playerName(uid){ return (S.players[uid] && S.players[uid].name) || 'ተጫዋች'; }
+function noteHTML(){
+  if (!S.round || !S.round.note) return '';
+  return '<div class="panel warn" style="margin-top:10px"><p>' + esc(S.round.note) + '</p></div>';
+}
 function resultHTML(result){
   if (!result) return '';
-  if (result.noWinner) return '<div class="panel"><h2>ማንም አላሸነፈም</h2><p class="muted">75ቱም ቁጥሮች ተጠርተዋል፤ በጊዜ BINGO ያለ አልነበረም።</p></div>';
+  if (result.noWinner) {
+    const msgs = {
+      cancelled: 'አጫዋቹ ይህን ዙር በእጅ አቁሞታል።',
+      allOut: 'ማንም ትክክለኛ BINGO ስላላለ (የተያዙት ካርዶች ሁሉ በስህተት BINGO በመባላቸው ከዙሩ ወጥተዋል) ዙሩ ተዘግቷል።',
+      exhausted: '75ቱም ቁጥሮች ተጠርተዋል፤ በጊዜ ትክክለኛ BINGO ያለ አልነበረም።'
+    };
+    const outList = result.reason === 'allOut'
+      ? '<p class="namelist">የወጡ ካርዶች፦ ' + Object.keys(S.round.out || {}).map(Number).sort((a, b) => a - b)
+          .map((n) => '#' + n + ' (' + esc(playerName(S.cards[n])) + ')').join('፣ ') + '</p>'
+      : '';
+    return '<div class="panel warn"><h2>ማንም አላሸነፈም</h2><p>' + (msgs[result.reason] || msgs.exhausted) + '</p>' + outList + '</div>';
+  }
   const mine = result.winners.some((w) => w.uid === S.uid);
-  return '<div class="panel"><h2>BINGO! ዙሩ አለቀ</h2><p>አሸናፊ ካርዶች፦ ' +
-    result.winners.map((w) => '#' + w.card + (w.uid === S.uid ? ' (አንተ)' : '')).join('፣ ') + '</p>' +
-    (mine ? '<p class="ok" style="display:inline-block">አሸንፈሃል! 🎉</p>' : '') + '</div>';
+  return '<div class="panel ok"><h2>BINGO! ዙሩ አለቀ</h2><p>አሸናፊ ካርዶች፦ ' +
+    result.winners.map((w) => '#' + w.card + ' (' + esc(playerName(w.uid)) + ')' + (w.uid === S.uid ? ' — አንተ' : '')).join('፣ ') + '</p>' +
+    (mine ? '<p style="font-weight:800;margin-top:4px">አሸንፈሃል! 🎉</p>' : '') + '</div>';
 }
 function cdLeft(){
   if (!S.round || !S.round.claimDeadline) return WINDOW_MS / 1000;
@@ -720,8 +758,9 @@ function view(){
         mid = '<div class="panel"><div class="ballrow">' + callBallHTML(called) +
           '<div><b>' + esc(shapeOf(S.round.shape).name) + '</b><p class="muted">' + called.length + ' ከ75 ተጠርተዋል</p></div></div>' +
           (st === 'claim' ? '<div class="ok" style="margin-top:10px"><div class="cdbox"><span class="cdnum cdv">' + cdLeft() + '</span><span>BINGO ተብሏል፣ ማረጋገጫ በመካሄድ ላይ…</span></div></div>' : '') +
+          noteHTML() +
           boardHTML(called) +
-          '<button class="btn alt" data-a="resetround" style="margin-top:10px"' + (S.busy ? ' disabled' : '') + '>ዙሩን አቁም</button></div>';
+          '<button class="btn alt" data-a="stopround" style="margin-top:10px"' + (S.busy ? ' disabled' : '') + '>ዙሩን አቁም</button></div>';
       }
       return '<div class="hero"><h1>ክፍልህ ክፍት ነው</h1><p class="muted">ተጫዋቾች ይህን ኮድ ይጽፋሉ</p></div>' +
         '<div class="panel"><div class="roomcode" aria-label="የክፍል ኮድ">' + esc(S.room) + '</div></div>' +
@@ -753,6 +792,7 @@ function view(){
         mid = '<div class="panel"><div class="ballrow">' + callBallHTML(called) +
           '<div><b>' + esc(shapeOf(S.round.shape).name) + '</b><p class="muted">' + called.length + ' ከ75 ተጠርተዋል</p></div></div></div>';
         if (st === 'claim') mid += '<div class="ok"><div class="cdbox"><span class="cdnum cdv">' + cdLeft() + '</span><span>BINGO ተብሏል፤ በ' + Math.ceil(WINDOW_MS / 1000) + ' ሰከንድ ውስጥ BINGO ያሉ ሁሉ ይመዘገባሉ።</span></div></div>';
+        mid += noteHTML();
         if (elig.length) {
           mid += '<button class="bingobtn" data-a="bingo"' + (S.chooser ? ' disabled' : '') + '>BINGO!</button>';
           if (S.chooser) mid += '<div class="panel"><b>የትኛው ካርድ?</b><div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">' +

@@ -12,6 +12,7 @@
   --bg:#F0F4EF; --surface:#FFFFFF; --surface2:#E3EAE2; --ink:#15231B; --muted:#5C6B62; --line:#D1DBD0;
   --green:#0E6B3D; --green-ink:#FFFFFF; --gold:#E4A11B; --gold-ink:#2A1D00; --red:#C5352B;
   --ok-bg:#E1F2E7; --bad-bg:#F9DEDA; --warn-bg:#FBEBD0;
+  --accent:#0E6B3D; --accent-ink:#FFFFFF;
   --font:'Noto Sans Ethiopic','Abyssinica SIL','Nyala',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){
@@ -19,7 +20,13 @@
     --bg:#101914; --surface:#18241D; --surface2:#22322A; --ink:#ECF2ED; --muted:#98A89E; --line:#2E4036;
     --green:#3BB472; --green-ink:#052013; --gold:#F0B434; --gold-ink:#241800; --red:#EE6C5F;
     --ok-bg:#183524; --bad-bg:#3D1E1B; --warn-bg:#3B2E14;
+    --accent:#3BB472; --accent-ink:#052013;
   }
+}
+/* የአጫዋች ገጾች በቀይ ተለይተው ይታያሉ፤ የተጫዋች ገጾች በአረንጓዴ (ነባሪ) */
+body[data-role="caller"]{ --accent:#C5352B; --accent-ink:#FFFFFF; }
+@media (prefers-color-scheme: dark){
+  body[data-role="caller"]{ --accent:#EE6C5F; --accent-ink:#2B0804; }
 }
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0}
@@ -57,10 +64,11 @@ main{max-width:480px;margin:0 auto;padding:22px 16px 40px;display:flex;flex-dire
 .panel.ok{background:var(--ok-bg);border-color:var(--green)}
 .panel.warn{background:var(--warn-bg);border-color:var(--gold)}
 .namelist{margin:6px 0 0;font-size:14px;color:var(--muted)}
-.btn{border:0;border-radius:12px;padding:14px 18px;min-height:56px;font-weight:800;font-size:18px;background:var(--green);color:var(--green-ink);width:100%}
+.btn{border:0;border-radius:12px;padding:14px 18px;min-height:56px;font-weight:800;font-size:18px;background:var(--accent);color:var(--accent-ink);width:100%}
 .btn.alt{background:var(--surface2);color:var(--ink)}
 .btn.ghost{background:transparent;color:var(--muted);font-weight:600;font-size:15px;min-height:44px}
 .btn.danger{background:var(--bad-bg);color:var(--red)}
+.btn.small{width:auto;min-height:36px;padding:6px 12px;font-size:13px;border-radius:9px}
 label{display:block;font-weight:700;margin:12px 0 6px}
 input{width:100%;min-height:52px;border:2px solid var(--line);border-radius:12px;padding:8px 14px;background:var(--surface);color:var(--ink);font-size:18px}
 input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px}
@@ -70,17 +78,17 @@ input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px
 .plist{list-style:none;margin:8px 0 0;padding:0}
 .plist li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
 .plist li:first-child{border-top:0}
-.tag{font-size:12px;font-weight:700;background:var(--ok-bg);color:var(--green);border-radius:99px;padding:2px 10px}
+.tag{font-size:12px;font-weight:700;background:var(--ok-bg);color:var(--accent);border-radius:99px;padding:2px 10px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .opt{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 6px;min-height:48px;font-weight:700;text-align:center}
-.opt.on{border-color:var(--green);background:var(--ok-bg)}
+.opt.on{border-color:var(--accent);background:var(--ok-bg)}
 .shapebtn{display:block;width:100%;text-align:start;border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;min-height:52px;margin-top:8px}
 .shapebtn b{display:block;font-size:15px}
 .shapebtn span{font-size:13px;color:var(--muted)}
-.shapebtn.on{border-color:var(--green);background:var(--ok-bg)}
+.shapebtn.on{border-color:var(--accent);background:var(--ok-bg)}
 .pick{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
 .pick button{min-height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-weight:700}
-.pick button.mine{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.pick button.mine{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .pick button.taken{background:var(--surface2);color:var(--muted);border-style:dashed}
 .stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}
 .stat3 div{background:var(--surface2);border-radius:10px;padding:8px 6px;text-align:center}
@@ -93,14 +101,14 @@ input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px
 .callball.empty{background:var(--surface2);box-shadow:0 0 0 3px var(--line);color:var(--muted)}
 .ballrow{display:flex;align-items:center;gap:14px}
 .board{display:grid;grid-template-columns:16px repeat(15,1fr);gap:2px;font-size:10px;margin-top:10px}
-.board .l{font-weight:800;color:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px}
+.board .l{font-weight:800;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px}
 .board .c{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;background:var(--surface2);color:var(--muted)}
-.board .c.on{background:var(--green);color:var(--green-ink);font-weight:700}
+.board .c.on{background:var(--accent);color:var(--accent-ink);font-weight:700}
 .board .c.last{background:var(--gold);color:var(--gold-ink);font-weight:800}
 .cardgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}
-.cardgrid .h{text-align:center;font-weight:800;color:var(--green);font-size:16px}
+.cardgrid .h{text-align:center;font-weight:800;color:var(--accent);font-size:16px}
 .cardgrid button{aspect-ratio:1;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:9px;font-weight:700;font-size:17px;padding:0}
-.cardgrid button.m{background:var(--green);color:var(--green-ink);border-color:var(--green)}
+.cardgrid button.m{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .cardgrid button.free{background:var(--gold);color:var(--gold-ink);border-color:var(--gold);font-size:11px}
 .cardbox{position:relative}
 .cardbox.out .cardgrid{opacity:.35}
@@ -147,6 +155,7 @@ const db = getDatabase(app);
 
 const CARD_COUNT = 30;
 const FEES = [50, 100, 150, 200, 300, 400, 500, 1000];
+const TOPUPS = [50, 100, 500];
 const SHAPES = [
   { id: 'line', name: 'አንድ መስመር', hint: 'አንድ አግድም ወይም አንድ ቋሚ መስመር' },
   { id: 'two', name: 'ሁለት መስመር (ማንኛውም)', hint: 'ማንኛውም ሁለት መስመሮች፣ አግድምም ቋሚም ሊሆኑ ይችላሉ' },
@@ -428,7 +437,7 @@ async function joinRoom(){
   try {
     const meta = await get(ref(db, `rooms/${code}/meta`));
     if (!meta.exists()) throw { code: 'no-room' };
-    await set(ref(db, `rooms/${code}/players/${S.uid}`), { name: name, joinedAt: serverTimestamp() });
+    await set(ref(db, `rooms/${code}/players/${S.uid}`), { name: name, joinedAt: serverTimestamp(), balance: 0 });
     ls.set('bingo_name', name); ls.set('bingo_room', code);
     S.room = code; subscribeRoom(code); S.screen = 'lobbyPlayer';
   } catch (err) {
@@ -478,12 +487,29 @@ async function stopRound(){
   } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
   S.busy = false; render();
 }
+async function topupPlayer(uid, amount){
+  if (!S.room) return;
+  if (S.round && (S.round.status === 'running' || S.round.status === 'claim')) { toast('ጨዋታው እየተካሄደ ነው፤ ጨዋታው እስኪያልቅ ኮይን መጨመር አይቻልም'); return; }
+  const p = S.players[uid];
+  if (!p) return;
+  try {
+    await set(ref(db, `rooms/${S.room}/players/${uid}/balance`), (p.balance || 0) + amount);
+    toast(p.name + ' ላይ +' + amount + ' ኮይን ተጨምሯል');
+  } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
+}
 async function pickCard(no){
   if (!S.room || !S.round || S.round.status !== 'joining') return;
   const owner = S.cards[no];
+  const me = S.players[S.uid] || {};
+  const balance = me.balance || 0;
+  const fee = S.round.fee;
   try {
-    if (owner === S.uid) await remove(ref(db, `rooms/${S.room}/cards/${no}`));
-    else if (!owner) await set(ref(db, `rooms/${S.room}/cards/${no}`), S.uid);
+    if (owner === S.uid) {
+      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: null, [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee });
+    } else if (!owner) {
+      if (balance < fee) { toast('በቂ ኮይን የለህም (ያለህ ' + balance + '፣ ያስፈልጋል ' + fee + ')። አጫዋቹን ኮይን እንዲልክልህ ጠይቅ።'); return; }
+      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: S.uid, [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee });
+    }
   } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
 }
 
@@ -607,6 +633,7 @@ function act(a, d){
   else if (a === 'resetround') { resetRound(); return; }
   else if (a === 'stopround') { stopRound(); return; }
   else if (a === 'pickcard') { pickCard(+d.n); return; }
+  else if (a === 'topup') { topupPlayer(d.id, +d.v); return; }
   else if (a === 'startgame') { startCalling(); return; }
   else if (a === 'newround') { S.round && stopCallerTimers(); remove(ref(db, `rooms/${S.room}/round`)).catch(() => {}); return; }
   else if (a === 'mark') { toggleMark(d.card, +d.n); return; }
@@ -634,8 +661,18 @@ function playerList(){
   const entries = Object.keys(S.players).map((id) => ({ id: id, p: S.players[id] }));
   entries.sort((a, b) => (a.p.joinedAt || 0) - (b.p.joinedAt || 0));
   if (!entries.length) return '<p class="muted">እስካሁን ማንም አልገባም።</p>';
-  return '<ul class="plist">' + entries.map((x) =>
-    '<li><span>' + esc(x.p.name || 'ስም-አልባ') + '</span>' + (x.id === S.uid ? '<span class="tag">አንተ</span>' : '') + '</li>').join('') + '</ul>';
+  if (!S.isCaller) {
+    return '<ul class="plist">' + entries.map((x) =>
+      '<li><span>' + esc(x.p.name || 'ስም-አልባ') + '</span>' + (x.id === S.uid ? '<span class="tag">አንተ</span>' : '') + '</li>').join('') + '</ul>';
+  }
+  const locked = !!S.round && (S.round.status === 'running' || S.round.status === 'claim');
+  return '<ul class="plist">' + entries.map((x) => {
+    const bal = x.p.balance || 0;
+    return '<li><div><span>' + esc(x.p.name || 'ስም-አልባ') + '</span><div class="muted">' + bal + ' ኮይን</div></div>' +
+      '<div class="row" style="flex-wrap:nowrap;gap:6px">' +
+      TOPUPS.map((v) => '<button class="btn alt small" data-a="topup" data-id="' + x.id + '" data-v="' + v + '"' + (locked ? ' disabled' : '') + '>+' + v + '</button>').join('') +
+      '</div></li>';
+  }).join('') + '</ul>' + (locked ? '<p class="muted" style="margin-top:6px">ጨዋታው እየተካሄደ ስለሆነ ኮይን መጨመር ጊዜያዊ ተዘግቷል።</p>' : '');
 }
 function boardHTML(called){
   const last = called.length ? called[called.length - 1] : -1;
@@ -772,19 +809,23 @@ function view(){
       const n = Object.keys(S.players).length;
       const st = S.round ? S.round.status : null;
       const mineAll = Object.keys(S.cards).filter((k) => S.cards[k] === S.uid).map(Number);
+      const myBalance = (S.players[S.uid] && S.players[S.uid].balance) || 0;
       let mid;
       if (!S.round) {
         mid = '<div class="ok"><p>አጫዋቹ ዙር እስኪከፍት ጠብቅ።</p></div>';
       } else if (st === 'joining') {
-        const sh = shapeOf(S.round.shape);
+        const sh = shapeOf(S.round.shape), fee = S.round.fee;
         let cells = '';
         for (let no = 1; no <= CARD_COUNT; no++) {
           const owner = S.cards[no];
-          const cls = owner === S.uid ? 'mine' : (owner ? 'taken' : '');
-          cells += '<button class="' + cls + '" data-a="pickcard" data-n="' + no + '"' + (owner && owner !== S.uid ? ' disabled' : '') + '>' + no + '</button>';
+          const canAfford = myBalance >= fee;
+          const cls = owner === S.uid ? 'mine' : (owner || !canAfford ? 'taken' : '');
+          const dis = (owner && owner !== S.uid) || (!owner && !canAfford);
+          cells += '<button class="' + cls + '" data-a="pickcard" data-n="' + no + '"' + (dis ? ' disabled' : '') + '>' + no + '</button>';
         }
         mid = '<div class="panel"><h2>ቅርጽ፦ ' + esc(sh.name) + '</h2><p class="muted">' + esc(sh.hint) + '</p>' +
-          '<p>የካርድ ዋጋ፦ <b>' + S.round.fee + ' ኮይን</b>' + (mineAll.length ? ' · የያዝካቸው፦ ' + mineAll.map((c) => '#' + c).join(', ') : '') + '</p></div>' +
+          '<p>የካርድ ዋጋ፦ <b>' + fee + ' ኮይን</b> · ኮይንህ፦ <b>' + myBalance + '</b>' + (mineAll.length ? ' · የያዝካቸው፦ ' + mineAll.map((c) => '#' + c).join(', ') : '') + '</p>' +
+          (myBalance < fee && !mineAll.length ? '<p class="muted">በቂ ኮይን የለህም። አጫዋቹ ኮይን እስኪልክልህ ጠብቅ።</p>' : '') + '</div>' +
           '<div class="panel"><h2>ካርድ ምረጥ</h2><p class="muted">የተያዘ ካርድ ለሌላ ሰው አይሰጥም። የያዝከውን ድጋሚ ብትነካው ትለቀዋለህ።</p><div class="pick">' + cells + '</div></div>';
       } else if (st === 'running' || st === 'claim') {
         const called = S.round.called || [];
@@ -814,6 +855,7 @@ function view(){
   }
 }
 function render(){
+  document.body.dataset.role = S.isCaller ? 'caller' : 'player';
   const a = document.activeElement;
   const keep = a && a.dataset && a.dataset.f ? { f: a.dataset.f, s: a.selectionStart } : null;
   $('app').innerHTML = view();

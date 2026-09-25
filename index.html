@@ -126,7 +126,7 @@ input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px
 <div class="splash" id="splash" aria-live="polite">
   <div class="mid">
     <div class="ball" aria-hidden="true">B</div>
-    <h1>ቢንጎ</h1>
+    <h1>BINGO</h1>
   </div>
   <div class="dev">Developed by Andualem</div>
 </div>
@@ -154,8 +154,8 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 const CARD_COUNT = 30;
-const FEES = [50, 100, 150, 200, 300, 400, 500, 1000];
-const TOPUPS = [50, 100, 500];
+const FEES = [10,50, 100, 150, 200, 300, 400, 500, 1000];
+const TOPUPS = [10,50, 100, 500];
 const SHAPES = [
   { id: 'line', name: 'አንድ መስመር', hint: 'አንድ አግድም ወይም አንድ ቋሚ መስመር' },
   { id: 'two', name: 'ሁለት መስመር (ማንኛውም)', hint: 'ማንኛውም ሁለት መስመሮች፣ አግድምም ቋሚም ሊሆኑ ይችላሉ' },
@@ -268,8 +268,7 @@ let unsubs = [];
 function unsubscribeAll(){ unsubs.forEach((f) => { try { f(); } catch (e) {} }); unsubs = []; }
 
 function isDenied(err){ return err && (err.code === 'PERMISSION_DENIED' || /permission/i.test(err.message || '') || /permission/i.test(err.code || '')); }
-
-/* ---------- መጀመሪያ ---------- */
+  /* ---------- መጀመሪያ ---------- */
 async function boot(){
   try {
     const res = await Promise.all([signInAnonymously(auth), delay(2200)]);
@@ -429,7 +428,8 @@ async function closeRoom(){
   S.screen = 'callerHome';
   render();
 }
-async function joinRoom(){
+  
+  async function joinRoom(){
   const name = (S.form.name || '').trim(), code = (S.form.room || '').trim();
   if (!name) return setErr('ስምህን ጻፍ።');
   if (!/^\d{4}$/.test(code)) return setErr('የክፍሉን የ4 አሃዝ ኮድ ጻፍ።');
@@ -588,8 +588,8 @@ async function resolveClaims(){
   } catch (err) { toast('ስህተት፦ ' + (err.code || err.message)); }
   if (updates.status === 'running') scheduleDraw(CALL_MS);
 }
-
-/* ---------- BINGO ማለት (ተጫዋቹ) ---------- */
+  
+  /* ---------- BINGO ማለት (ተጫዋቹ) ---------- */
 function myEligibleCards(){
   const mine = Object.keys(S.cards).filter((n) => S.cards[n] === S.uid).map(Number);
   const out = (S.round && S.round.out) || {};
@@ -732,6 +732,7 @@ function resultHTML(result){
 }
 function cdLeft(){
   if (!S.round || !S.round.claimDeadline) return WINDOW_MS / 1000;
+  
   return Math.max(0, Math.ceil((S.round.claimDeadline - Date.now()) / 1000));
 }
 function view(){

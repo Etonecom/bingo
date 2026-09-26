@@ -754,8 +754,8 @@ function act(a, d){
   else if (a === 'rejectjoin') { approveJoin(d.id,false); return; }
   else if (a === 'approvecoin') { decideCoin(d.id,true); return; }
   else if (a === 'rejectcoin') { decideCoin(d.id,false); return; }
-  else if (a === 'deposit') { requestCoin('deposit'); return; }
-  else if (a === 'withdraw') { requestCoin('withdraw'); return; }
+  else if (a === 'deposit') { if(!S.isCaller){ gameCoinFormKind='deposit'; render(); setTimeout(()=>document.getElementById('gameCoinAmount')?.focus(),0); } return; }
+  else if (a === 'withdraw') { if(!S.isCaller){ gameCoinFormKind='withdraw'; render(); setTimeout(()=>document.getElementById('gameCoinAmount')?.focus(),0); } return; }
   else if (a === 'redeem') { redeemCode(); return; }
   else if (a === 'openroom') { openRoom(); return; }
   else if (a === 'closeroom') { closeRoom(); return; }
@@ -977,8 +977,10 @@ function view(){
       } else {
         mid = (S.round.result ? resultHTML(S.round.result) : '') + '<div class="ok"><p>ቀጣዩ ዙር እስኪከፈት ጠብቅ።</p></div>';
       }
+      const gameCoinForm = gameCoinFormKind ? '<div class="panel" id="gameCoinForm"><b>' + (gameCoinFormKind==='deposit'?'ኮይን ገቢ ጥያቄ':'ኮይን ወጪ ጥያቄ') + '</b><p class="muted" style="margin:5px 0 8px">የኮይን መጠን ያስገቡ</p><div class="row" style="display:flex;gap:8px;align-items:center"><input id="gameCoinAmount" type="number" min="1" step="1" inputmode="numeric" placeholder="Coin amount" style="flex:1"><button class="btn" data-game-coin-submit="' + gameCoinFormKind + '">Submit</button><button class="btn ghost" data-game-coin-cancel="1">ሰርዝ</button></div></div>' : '';
       return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>'+esc((S.players[S.uid]&&S.players[S.uid].name)||S.form.name)+'</h1><p class="muted">ID: '+esc((S.players[S.uid]&&S.players[S.uid].playerId)||S.form.playerId)+' · ክፍል ' + esc(S.room) + '</p></div>' +
         '<div class="panel"><div style="font-size:30px;font-weight:800">'+myBalance+' <span class="muted" style="font-size:14px">COINS</span></div><div class="row" style="margin-top:10px"><button class="btn alt small" data-a="deposit">ኮይን ገቢ አድርግ</button><button class="btn ghost small" data-a="withdraw">ኮይን ወጪ አድርግ</button></div></div>' +
+        gameCoinForm +
         mid +
         '<div class="panel"><h2>በክፍሉ ውስጥ (' + n + ')</h2>' + playerList() + '</div>' +
         '<button class="btn ghost" data-a="leave">ከክፍሉ ውጣ</button>' + foot;
@@ -989,6 +991,7 @@ function view(){
 }
 
 let proTab = 'profile';
+let gameCoinFormKind = '';
 
 function proInitial(name){
   const s = String(name || '?').trim();
@@ -1095,8 +1098,8 @@ function showProCoinForm(kind){
   if(S.isCaller)return;
   const box=$('proCoinForm');
   if(!box)return;
-  const title=kind==='deposit'?'የCoin ገቢ ጥያቄ':'የCoin ወጪ ጥያቄ';
-  box.innerHTML=`<div class="panel" style="margin-top:12px"><b>${title}</b><div class="row" style="margin-top:9px;display:flex;gap:8px;align-items:center"><input id="proCoinAmount" type="number" min="1" step="1" inputmode="numeric" placeholder="Coin amount" style="flex:1"><button class="btn" data-pro-confirm="${kind}">አረጋግጥ</button><button class="btn ghost" data-pro-cancel-coin="1">ሰርዝ</button></div></div>`;
+  const title=kind==='deposit'?'የኮይን ገቢ ጥያቄ':'የኮይን ወጪ ጥያቄ';
+  box.innerHTML=`<div class="panel" style="margin-top:12px"><b>${title}</b><p class="muted" style="margin:5px 0 8px">የኮይን መጠን ያስገቡ</p><div class="row" style="display:flex;gap:8px;align-items:center"><input id="proCoinAmount" type="number" min="1" step="1" inputmode="numeric" placeholder="Coin amount" style="flex:1"><button class="btn" data-pro-confirm="${kind}">Submit</button><button class="btn ghost" data-pro-cancel-coin="1">ሰርዝ</button></div></div>`;
   $('proCoinAmount')?.focus();
 }
 
@@ -1129,6 +1132,18 @@ function render(){
 }
 
 document.addEventListener('click', (e)=>{
+  const gameSubmit=e.target.closest('[data-game-coin-submit]');
+  if(gameSubmit){
+    if(S.isCaller)return;
+    const input=document.getElementById('gameCoinAmount');
+    const n=Math.floor(Number(input?.value));
+    if(!Number.isFinite(n)||n<=0){ toast('የኮይን መጠን በትክክል ያስገቡ።'); return; }
+    const kind=gameSubmit.dataset.gameCoinSubmit;
+    requestCoin(kind,n).then(()=>{ gameCoinFormKind=''; render(); }).catch(()=>{});
+    return;
+  }
+  const gameCancel=e.target.closest('[data-game-coin-cancel]');
+  if(gameCancel){ gameCoinFormKind=''; render(); return; }
   const nav=e.target.closest('.pro-nav-btn');
   if(nav){ showProTab(nav.dataset.proTab); return; }
   const color=e.target.closest('[data-pro-color]');

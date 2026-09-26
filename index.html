@@ -119,6 +119,38 @@ input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px
 .cdnum{width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;font-weight:600;max-width:calc(100% - 28px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;text-align:center}
 .toast.show{opacity:1}
+
+.offline-name{color:#c5352b!important}.request{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.small{padding:8px 10px!important;font-size:13px!important}.request-list .panel{margin-top:8px}
+</style>
+
+<style id="bingoProUI">
+:root{--pro-primary:#1769ff;--pro-bg:#f5f7fb;--pro-card:#fff;--pro-text:#172033;--pro-muted:#7b8496;--pro-line:rgba(23,32,51,.09)}
+body{background:var(--pro-bg)}
+body.dark-ui{--pro-bg:#0d1118;--pro-card:#151b24;--pro-text:#eef3fb;--pro-muted:#9aa6b8;--pro-line:rgba(255,255,255,.10);background:var(--pro-bg);color:var(--pro-text)}
+#app.ui-game-hidden{display:none}
+#proNav{display:none;position:fixed;left:50%;bottom:9px;transform:translateX(-50%);z-index:9999;width:min(720px,calc(100% - 12px));grid-template-columns:repeat(5,1fr);gap:4px;padding:7px;background:rgba(255,255,255,.94);backdrop-filter:blur(18px);border:1px solid var(--pro-line);border-radius:23px;box-shadow:0 12px 38px rgba(0,0,0,.16)}
+.dark-ui #proNav{background:rgba(21,27,36,.94)}
+#proNav.show{display:grid}
+.pro-nav-btn{border:0;background:transparent;color:var(--pro-muted);border-radius:16px;padding:7px 2px;font:800 10px system-ui;cursor:pointer}
+.pro-nav-btn b{display:block;font-size:19px;line-height:20px;margin-bottom:2px}
+.pro-nav-btn.active{background:color-mix(in srgb,var(--pro-primary) 11%,transparent);color:var(--pro-primary)}
+#proPanel{display:none;position:fixed;inset:0;z-index:9998;background:var(--pro-bg);overflow:auto;padding:14px 14px 95px;color:var(--pro-text)}
+#proPanel.show{display:block}
+.pro-head{max-width:720px;margin:0 auto 14px;display:flex;align-items:center;justify-content:space-between}
+.pro-brand{font-size:21px;font-weight:950}.pro-brand span{color:#ff8c00}
+.pro-room{font-size:11px;color:var(--pro-muted);background:var(--pro-card);border:1px solid var(--pro-line);padding:7px 10px;border-radius:999px}
+.pro-wrap{max-width:720px;margin:auto}
+.pro-card{background:var(--pro-card);border:1px solid var(--pro-line);border-radius:21px;padding:16px;margin-bottom:12px;box-shadow:0 8px 25px rgba(20,30,50,.06)}
+.pro-profile{display:flex;gap:12px;align-items:center}.pro-avatar{width:55px;height:55px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,var(--pro-primary),#65a5ff);color:#fff;font-weight:950;font-size:20px}
+.pro-name{font-weight:900;font-size:18px}.pro-id{font-size:11px;color:var(--pro-muted);margin-top:3px}
+.pro-title{font-size:16px;font-weight:900;margin-bottom:12px}.pro-muted{color:var(--pro-muted);font-size:12px}
+.pro-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--pro-line)}.pro-row:last-child{border-bottom:0}
+.pro-balance{font-size:31px;font-weight:950}.pro-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.pro-btn{border:0;border-radius:14px;padding:12px;font-weight:850;cursor:pointer;background:#edf2f9;color:var(--pro-text)}.pro-btn.primary{background:var(--pro-primary);color:#fff}
+.pro-list{display:grid;gap:8px}.pro-item{padding:12px;border:1px solid var(--pro-line);border-radius:14px}.pro-item small{color:var(--pro-muted)}
+.pro-empty{text-align:center;padding:28px 8px;color:var(--pro-muted);font-size:13px}
+.pro-colors{display:flex;gap:9px;flex-wrap:wrap}.pro-color{width:30px;height:30px;border-radius:50%;border:3px solid var(--pro-card);box-shadow:0 0 0 1px #cbd3df;cursor:pointer}.pro-color.sel{box-shadow:0 0 0 2px var(--pro-primary)}
+.pro-switch{width:48px;height:28px;border-radius:20px;background:#d9dfeb;padding:3px;cursor:pointer}.pro-switch i{display:block;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}.pro-switch.on{background:var(--pro-primary)}.pro-switch.on i{transform:translateX(20px)}
+@media(max-width:420px){#proPanel{padding-left:10px;padding-right:10px}}
 </style>
 </head>
 <body>
@@ -126,18 +158,30 @@ input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px
 <div class="splash" id="splash" aria-live="polite">
   <div class="mid">
     <div class="ball" aria-hidden="true">B</div>
-    <h1>BINGO<span style="color:#FF8C00;">an</span></h1>
+    <h1 style="color:#black;">BINGO<span style="color:#FF8C00;">an</span></h1>
   </div>
   <div class="dev">Developed by Andualem</div>
 </div>
 
 <main id="app"></main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="proPanel"></div>
+<nav id="proNav" aria-label="Main navigation">
+  <button class="pro-nav-btn active" data-pro-tab="profile"><b>👤</b>Profile</button>
+  <button class="pro-nav-btn" data-pro-tab="coins"><b>🪙</b>Coins</button>
+  <button class="pro-nav-btn" data-pro-tab="game"><b>🎯</b>Game</button>
+  <button class="pro-nav-btn" data-pro-tab="history"><b>📜</b>History</button>
+  <button class="pro-nav-btn" data-pro-tab="players"><b>👥</b>Players</button>
+</nav>
+
 
 <script type="module">
+  
+
+  
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCzg6CzEz9e4Q9icfdoegSZkJh-TQjqIgc",
@@ -258,10 +302,10 @@ function toast(msg){
 const S = {
   screen: 'loading',      // loading | role | player | callerCode | callerHome | lobbyCaller | lobbyPlayer | fatal
   uid: null, isCaller: false,
-  room: null, meta: null, players: {}, round: null, cards: {}, claims: {},
+  room: null, meta: null, players: {}, round: null, cards: {}, claims: {}, joinRequests: {}, coinRequests: {}, currentPlayerId: null, pendingJoin: null,
   marks: {}, chooser: false,
   roundForm: { shape: 'line', fee: 100 },
-  form: { name: ls.get('bingo_name') || '', room: '', code: '' },
+  form: { name: ls.get('bingo_name') || '', playerId: ls.get('bingo_player_id') || '', room: '', code: '' },
   busy: false, err: ''
 };
 let unsubs = [];
@@ -312,16 +356,63 @@ async function restore(){
   if (role === 'caller') {
     S.isCaller = await checkCaller();
     if (!S.isCaller) { ls.del('bingo_room'); S.screen = 'callerCode'; return; }
-    if (room && await enterExistingRoom(room, true)) return;
+    if (room && await enterExistingRoom(room, true)) { setupPresence(room); return; }
     S.screen = 'callerHome';
     return;
   }
   if (role === 'player') {
-    if (room && await enterExistingRoom(room, false)) return;
+    if (room && await enterExistingRoom(room, false)) { setupPresence(room); return; }
     S.screen = 'player';
     return;
   }
   S.screen = 'role';
+}
+
+/* ---------- identity / coin / presence ---------- */
+function myPlayer(){ return S.players[S.uid] || null; }
+function cacheKey(room,pid){ return 'bingo_balance_'+room+'_'+pid; }
+function cacheBalance(room,pid,bal){ if(room&&pid&&Number.isFinite(+bal)) ls.set(cacheKey(room,pid),String(+bal)); }
+function cachedBalance(room,pid){ const v=ls.get(cacheKey(room,pid)); return v==null?null:(+v||0); }
+function requestId(){ return S.uid+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); }
+let presenceUnsub = null;
+function setupPresence(code){
+  if(!code || !S.uid)return;
+  if(presenceUnsub){ try{ presenceUnsub(); }catch(e){} presenceUnsub=null; }
+  const r=ref(db,`rooms/${code}/players/${S.uid}/online`);
+  const connected=ref(db,'.info/connected');
+  presenceUnsub=onValue(connected, snap=>{
+    if(snap.val()!==true)return;
+    onDisconnect(r).set(false).then(()=>set(r,true)).catch(()=>{});
+  });
+  if(navigator.onLine) set(r,true).catch(()=>{});
+}
+async function requestIdentityTransfer(existing,name,pid,code){
+ const rid=requestId(); S.pendingJoin=rid;
+ await set(ref(db,`rooms/${code}/joinRequests/${rid}`),{requestId:rid,newUid:S.uid,oldUid:existing.uid,name,playerId:pid,status:'pending',at:serverTimestamp()});
+ ls.set('bingo_name',name); ls.set('bingo_player_id',pid); ls.set('bingo_room',code); S.room=code; subscribeRoom(code); S.screen='joinWaiting'; render();
+}
+async function approveJoin(rid,approve){
+ const q=S.joinRequests[rid]; if(!q||!S.room)return; const base=`rooms/${S.room}`;
+ try{ if(!approve){await update(ref(db,`${base}/joinRequests/${rid}`),{status:'rejected',decidedAt:serverTimestamp()});return;}
+  const oldSnap=await get(ref(db,`${base}/players/${q.oldUid}`)); const old=oldSnap.exists()?oldSnap.val():{name:q.name,playerId:q.playerId,balance:0};
+  const updates={}; updates[`${base}/players/${q.newUid}`]={...old,name:q.name,playerId:q.playerId,online:true,lastReconnectedAt:serverTimestamp()}; updates[`${base}/joinRequests/${rid}/status`]='approved'; updates[`${base}/joinRequests/${rid}/decidedAt`]=serverTimestamp();
+  const cardsSnap=await get(ref(db,`${base}/cards`)); const cards=cardsSnap.val()||{}; Object.keys(cards).forEach(no=>{if(cards[no]===q.oldUid)updates[`${base}/cards/${no}`]=q.newUid;});
+  await update(ref(db),updates); await remove(ref(db,`${base}/players/${q.oldUid}`));
+ }catch(e){toast('የመግቢያ ፍቃድ አልተሳካም።');}
+}
+async function requestCoin(kind, suppliedAmount){
+ const p=myPlayer(); if(!S.room||!p)return;
+ const raw=suppliedAmount==null?prompt(kind==='deposit'?'ለተጨማሪ ኮይን የምትፈልገውን መጠን ጻፍ፦':'ለማውጣት የምትፈልገውን ኮይን መጠን ጻፍ፦','100'):suppliedAmount;
+ const amount=+raw;
+ if(!Number.isInteger(amount)||amount<=0){toast('ትክክለኛ የኮይን መጠን ጻፍ።');return;} if(kind==='withdraw'&&amount>(+p.balance||0)){toast('ያለህ ኮይን በቂ አይደለም።');return;}
+ const rid=requestId(); await set(ref(db,`rooms/${S.room}/coinRequests/${rid}`),{requestId:rid,uid:S.uid,name:p.name,playerId:p.playerId,kind,amount,status:'pending',at:serverTimestamp()}); toast(kind==='deposit'?'የኮይን ገቢ ጥያቄህ ተልኳል።':'የኮይን ወጪ ጥያቄህ ተልኳል።');
+}
+async function decideCoin(rid,approve){
+ const q=S.coinRequests[rid]; if(!q||!S.room||q.status!=='pending')return; try{ if(!approve){await update(ref(db,`rooms/${S.room}/coinRequests/${rid}`),{status:'rejected',decidedAt:serverTimestamp()});return;}
+  const ps=await get(ref(db,`rooms/${S.room}/players/${q.uid}`)); if(!ps.exists())return; const p=ps.val(),old=+p.balance||0,amount=+q.amount||0;
+  if(q.kind==='withdraw'&&old<amount){await update(ref(db,`rooms/${S.room}/coinRequests/${rid}`),{status:'rejected',reason:'insufficient-balance',decidedAt:serverTimestamp()});return;}
+  const next=q.kind==='deposit'?old+amount:old-amount; await update(ref(db),{[`rooms/${S.room}/players/${q.uid}/balance`]:next,[`rooms/${S.room}/coinRequests/${rid}/status`]:'approved',[`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp()});
+ }catch(e){toast('የኮይን ጥያቄውን ማስፈጸም አልተቻለም።');}
 }
 
 /* ---------- ክፍል መከታተል ---------- */
@@ -336,8 +427,21 @@ function subscribeRoom(code){
   }));
   unsubs.push(onValue(ref(db, `rooms/${code}/players`), (snap) => {
     S.players = snap.val() || {};
+    const me=S.players[S.uid];
+    if(me && me.playerId && me.balance!=null){S.currentPlayerId=me.playerId;cacheBalance(code,me.playerId,+me.balance);}
     render();
   }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/joinRequests`), snap=>{
+    S.joinRequests=snap.val()||{};
+    const pending=S.pendingJoin?S.joinRequests[S.pendingJoin]:null;
+    if(!S.isCaller && pending?.status==='approved'){
+      S.currentPlayerId=pending.playerId||S.currentPlayerId;
+      S.screen='lobbyPlayer';
+      setupPresence(code);
+    }
+    render();
+  }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/coinRequests`), snap=>{S.coinRequests=snap.val()||{};render();}));
   unsubs.push(onValue(ref(db, `rooms/${code}/round`), (snap) => {
     const existed = snap.exists();
     const newStatus = existed ? snap.val().status : null;
@@ -430,21 +534,18 @@ async function closeRoom(){
 }
   
   async function joinRoom(){
-  const name = (S.form.name || '').trim(), code = (S.form.room || '').trim();
-  if (!name) return setErr('ስምህን ጻፍ።');
-  if (!/^\d{4}$/.test(code)) return setErr('የክፍሉን የ4 አሃዝ ኮድ ጻፍ።');
-  S.busy = true; S.err = ''; render();
-  try {
-    const meta = await get(ref(db, `rooms/${code}/meta`));
-    if (!meta.exists()) throw { code: 'no-room' };
-    await set(ref(db, `rooms/${code}/players/${S.uid}`), { name: name, joinedAt: serverTimestamp(), balance: 0 });
-    ls.set('bingo_name', name); ls.set('bingo_room', code);
-    S.room = code; subscribeRoom(code); S.screen = 'lobbyPlayer';
-  } catch (err) {
-    S.err = err.code === 'no-room' ? 'ይህ ክፍል አልተገኘም። ኮዱን አጫዋቹን ጠይቅ።' : 'መግባት አልተቻለም፦ ' + (err.code || err.message);
-  }
-  S.busy = false; render();
+  const name=(S.form.name||'').trim(),pid=(S.form.playerId||'').trim(),code=(S.form.room||'').trim();
+  if(!name)return setErr('ስምህን ጻፍ።'); if(!/^[A-Za-z0-9_-]{3,24}$/.test(pid))return setErr('Player ID ከ3 እስከ 24 ፊደል/ቁጥር ይሁን።'); if(!/^\d{4}$/.test(code))return setErr('የክፍሉን የ4 አሃዝ ኮድ ጻፍ።');
+  S.busy=true;S.err='';render(); try{
+   const meta=await get(ref(db,`rooms/${code}/meta`));if(!meta.exists())throw{code:'no-room'};
+   const snap=await get(ref(db,`rooms/${code}/players`)),players=snap.val()||{}; const existing=Object.keys(players).map(uid=>({uid,p:players[uid]})).find(x=>x.p&&x.p.playerId===pid);
+   if(existing&&existing.uid!==S.uid){await requestIdentityTransfer(existing,name,pid,code);S.busy=false;return;}
+   const oldBalance=cachedBalance(code,pid),balance=existing?(+existing.p.balance||0):(oldBalance==null?0:oldBalance);
+   await set(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:existing?.p?.joinedAt||serverTimestamp(),balance,online:true,lastSeen:serverTimestamp()});
+   ls.set('bingo_name',name);ls.set('bingo_player_id',pid);ls.set('bingo_room',code);S.room=code;S.currentPlayerId=pid;subscribeRoom(code);setupPresence(code);S.screen='lobbyPlayer';
+  }catch(err){S.err=err.code==='no-room'?'ይህ ክፍል አልተገኘም። ኮዱን አጫዋቹን ጠይቅ።':'መግባት አልተቻለም፦ '+(err.code||err.message);} S.busy=false;render();
 }
+
 async function leaveRoom(){
   const code = S.room;
   unsubscribeAll();
@@ -623,6 +724,12 @@ function act(a, d){
   else if (a === 'role-caller') { startCaller(); return; }
   else if (a === 'back') { ls.del('bingo_role'); S.screen = 'role'; }
   else if (a === 'join') { joinRoom(); return; }
+  else if (a === 'approvejoin') { approveJoin(d.id,true); return; }
+  else if (a === 'rejectjoin') { approveJoin(d.id,false); return; }
+  else if (a === 'approvecoin') { decideCoin(d.id,true); return; }
+  else if (a === 'rejectcoin') { decideCoin(d.id,false); return; }
+  else if (a === 'deposit') { requestCoin('deposit'); return; }
+  else if (a === 'withdraw') { requestCoin('withdraw'); return; }
   else if (a === 'redeem') { redeemCode(); return; }
   else if (a === 'openroom') { openRoom(); return; }
   else if (a === 'closeroom') { closeRoom(); return; }
@@ -649,6 +756,7 @@ document.addEventListener('click', (e) => {
 document.addEventListener('input', (e) => {
   const t = e.target;
   if (!t.dataset || !t.dataset.f) return;
+  if (t.dataset.f === 'playerId') t.value=t.value.replace(/[^A-Za-z0-9_-]/g,'').slice(0,24);
   if (t.dataset.f === 'room') t.value = t.value.replace(/\D/g, '').slice(0, 4);
   if (t.dataset.f === 'code') t.value = t.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24);
   S.form[t.dataset.f] = t.value;
@@ -658,22 +766,12 @@ document.addEventListener('input', (e) => {
 const foot = '<div class="dev-foot">Developed by Andualem</div>';
 const errBox = () => S.err ? '<div class="err" role="alert">' + esc(S.err) + '</div>' : '';
 function playerList(){
-  const entries = Object.keys(S.players).map((id) => ({ id: id, p: S.players[id] }));
-  entries.sort((a, b) => (a.p.joinedAt || 0) - (b.p.joinedAt || 0));
-  if (!entries.length) return '<p class="muted">እስካሁን ማንም አልገባም።</p>';
-  if (!S.isCaller) {
-    return '<ul class="plist">' + entries.map((x) =>
-      '<li><span>' + esc(x.p.name || 'ስም-አልባ') + '</span>' + (x.id === S.uid ? '<span class="tag">አንተ</span>' : '') + '</li>').join('') + '</ul>';
-  }
-  const locked = !!S.round && (S.round.status === 'running' || S.round.status === 'claim');
-  return '<ul class="plist">' + entries.map((x) => {
-    const bal = x.p.balance || 0;
-    return '<li><div><span>' + esc(x.p.name || 'ስም-አልባ') + '</span><div class="muted">' + bal + ' ኮይን</div></div>' +
-      '<div class="row" style="flex-wrap:nowrap;gap:6px">' +
-      TOPUPS.map((v) => '<button class="btn alt small" data-a="topup" data-id="' + x.id + '" data-v="' + v + '"' + (locked ? ' disabled' : '') + '>+' + v + '</button>').join('') +
-      '</div></li>';
-  }).join('') + '</ul>' + (locked ? '<p class="muted" style="margin-top:6px">ጨዋታው እየተካሄደ ስለሆነ ኮይን መጨመር ጊዜያዊ ተዘግቷል።</p>' : '');
+ const entries=Object.keys(S.players).map(id=>({id,p:S.players[id]})).sort((a,b)=>(a.p.joinedAt||0)-(b.p.joinedAt||0)); if(!entries.length)return '<p class="muted">እስካሁን ማንም አልገባም።</p>';
+ return '<ul class="plist">'+entries.map(x=>{const p=x.p||{},online=p.online!==false,bal=+p.balance||0,name='<span class="'+(online?'':'offline-name')+'">'+esc(p.name||'ስም-አልባ')+'</span>';if(!S.isCaller)return '<li>'+name+(x.id===S.uid?'<span class="tag">አንተ</span>':'')+'</li>';return '<li><div>'+name+'<div class="muted">'+bal+' ኮይን'+(online?'':' · <b style="color:#c5352b">offline</b>')+'</div></div></li>';}).join('')+'</ul>'+(S.isCaller?'<div class="request-list">'+joinRequestHTML()+coinRequestHTML()+'</div>':'');
 }
+function joinRequestHTML(){const qs=Object.values(S.joinRequests).filter(q=>q.status==='pending');if(!qs.length)return '';return '<div class="panel warn" style="margin-top:10px"><h3>የመመለሻ ጥያቄ</h3>'+qs.map(q=>'<div class="request"><div><b>'+esc(q.name)+'</b><div class="muted">ID: '+esc(q.playerId)+'</div></div><div class="row"><button class="btn small" data-a="approvejoin" data-id="'+esc(q.requestId)+'">ፍቀድ</button><button class="btn danger small" data-a="rejectjoin" data-id="'+esc(q.requestId)+'">አትፍቀድ</button></div></div>').join('')+'</div>';}
+function coinRequestHTML(){const qs=Object.values(S.coinRequests).filter(q=>q.status==='pending');if(!qs.length)return '';return '<div class="panel" style="margin-top:10px"><h3>የኮይን ጥያቄዎች</h3>'+qs.map(q=>'<div class="request"><div><b>'+esc(q.name)+'</b><div class="muted">'+(q.kind==='deposit'?'ገቢ':'ወጪ')+' · '+q.amount+' ኮይን</div></div><div class="row"><button class="btn small" data-a="approvecoin" data-id="'+esc(q.requestId)+'">ፍቀድ</button><button class="btn danger small" data-a="rejectcoin" data-id="'+esc(q.requestId)+'">ውድቅ</button></div></div>').join('')+'</div>';}
+
 function boardHTML(called){
   const last = called.length ? called[called.length - 1] : -1;
   let h = '<div class="board" aria-label="የተጠሩ ቁጥሮች ሰሌዳ">';
@@ -751,6 +849,9 @@ function view(){
       return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ክፍል ግባ</h1></div>' +
         '<div class="panel"><label for="f-name">ስምህ</label>' +
         '<input id="f-name" data-f="name" maxlength="20" autocomplete="off" placeholder="ለምሳሌ ሰላም" value="' + esc(S.form.name) + '">' +
+        '<label for="f-playerId">የተጫዋች ID</label>' +
+        '<input id="f-playerId" data-f="playerId" maxlength="24" autocomplete="off" placeholder="ለምሳሌ A1025" value="' + esc(S.form.playerId) + '">' +
+        '<small class="muted">ይህ ID በዚህ ክፍል ውስጥ ልዩ መሆን አለበት።</small>' +
         '<label for="f-room">የክፍል ኮድ (4 አሃዝ)</label>' +
         '<input id="f-room" class="code" data-f="room" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000" value="' + esc(S.form.room) + '"></div>' +
         errBox() +
@@ -764,6 +865,11 @@ function view(){
         errBox() +
         '<button class="btn" data-a="redeem"' + dis + '>' + (S.busy ? 'እየተረጋገጠ ነው…' : 'አግብር') + '</button>' +
         '<button class="btn ghost" data-a="back">ወደ ኋላ</button>' + foot;
+    case 'joinWaiting':
+      const jr=S.pendingJoin?S.joinRequests[S.pendingJoin]:null;
+      if(jr&&jr.status==='approved'){S.screen='lobbyPlayer';return view();}
+      if(jr&&jr.status==='rejected')return '<div class="hero"><div class="ball sm">B</div><h1>መግባት አልተፈቀደም</h1><p class="muted">ይህን ማንነት አጫዋቹ አልፈቀደም። አዲስ Player ID ተጠቀም።</p></div><button class="btn" data-a="back">አዲስ ተጫዋች ክፈት</button>'+foot;
+      return '<div class="hero"><div class="ball sm">B</div><h1>ፍቃድ በመጠባበቅ ላይ…</h1><p class="muted">ይህ Player ID ቀድሞ በክፍሉ ተመዝግቧል።</p></div><div class="panel"><b>'+esc(S.form.name)+'</b><div class="muted">ID: '+esc(S.form.playerId)+'</div><p style="margin-top:10px">አጫዋቹ ከፈቀደ የቀድሞ ኮይንና የዚህ ማንነት ውስጥ ያሉ መረጃዎች ይመለሳሉ።</p></div>'+foot;
     case 'callerHome':
       return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>እንኳን ደህና መጣህ፣ አጫዋች</h1></div>' +
         '<div class="panel"><p>አዲስ ክፍል ስትከፍት የ4 አሃዝ ኮድ ይሰጥሃል። ተጫዋቾች ያንን ኮድ ጽፈው ይገባሉ።</p></div>' +
@@ -810,7 +916,7 @@ function view(){
       const n = Object.keys(S.players).length;
       const st = S.round ? S.round.status : null;
       const mineAll = Object.keys(S.cards).filter((k) => S.cards[k] === S.uid).map(Number);
-      const myBalance = (S.players[S.uid] && S.players[S.uid].balance) || 0;
+      const mp=S.players[S.uid]; const myBalance=mp&&mp.balance!=null?(+mp.balance||0):(cachedBalance(S.room,S.currentPlayerId)||0);
       let mid;
       if (!S.round) {
         mid = '<div class="ok"><p>አጫዋቹ ዙር እስኪከፍት ጠብቅ።</p></div>';
@@ -846,7 +952,8 @@ function view(){
       } else {
         mid = (S.round.result ? resultHTML(S.round.result) : '') + '<div class="ok"><p>ቀጣዩ ዙር እስኪከፈት ጠብቅ።</p></div>';
       }
-      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ገብተሃል</h1><p class="muted">ክፍል ' + esc(S.room) + '</p></div>' +
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>'+esc((S.players[S.uid]&&S.players[S.uid].name)||S.form.name)+'</h1><p class="muted">ID: '+esc((S.players[S.uid]&&S.players[S.uid].playerId)||S.form.playerId)+' · ክፍል ' + esc(S.room) + '</p></div>' +
+        '<div class="panel"><div style="font-size:30px;font-weight:800">'+myBalance+' <span class="muted" style="font-size:14px">COINS</span></div><div class="row" style="margin-top:10px"><button class="btn alt small" data-a="deposit">ኮይን ገቢ አድርግ</button><button class="btn ghost small" data-a="withdraw">ኮይን ወጪ አድርግ</button></div></div>' +
         mid +
         '<div class="panel"><h2>በክፍሉ ውስጥ (' + n + ')</h2>' + playerList() + '</div>' +
         '<button class="btn ghost" data-a="leave">ከክፍሉ ውጣ</button>' + foot;
@@ -855,16 +962,162 @@ function view(){
       return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><p class="muted">እየተጫነ ነው…</p></div>';
   }
 }
+
+let proTab = 'profile';
+
+function proInitial(name){
+  const s = String(name || '?').trim();
+  return s ? s.charAt(0).toUpperCase() : '?';
+}
+function proCoins(p){
+  if(!p) return 0;
+  return Number(p.balance ?? p.coins ?? p.coin ?? 0) || 0;
+}
+function proHistory(){
+  const h = S.history || S.gameHistory || [];
+  return Array.isArray(h) ? h : Object.values(h || {});
+}
+function proRequests(){
+  const q = S.coinRequests || {};
+  return Object.values(q || {});
+}
+function proPanelHtml(tab){
+  const me = myPlayer ? myPlayer() : null;
+  const name = me?.name || S.form?.name || 'Player';
+  const pid = me?.playerId || S.form?.playerId || '—';
+  const room = S.room || S.form?.room || '—';
+  const balance = proCoins(me);
+  const role = S.isCaller ? 'Caller' : 'Player';
+
+  if(tab==='profile') return `
+    <div class="pro-head"><div class="pro-brand">BINGO<span>an</span></div><div class="pro-room">Room ${esc(room)}</div></div>
+    <div class="pro-wrap">
+      <div class="pro-card"><div class="pro-profile">
+        <div class="pro-avatar">${esc(proInitial(name))}</div>
+        <div><div class="pro-name">${esc(name)}</div><div class="pro-id">ID: ${esc(pid)}</div><div class="pro-muted">${role}</div></div>
+      </div></div>
+      <div class="pro-card"><div class="pro-title">Account</div>
+        <div class="pro-row"><span class="pro-muted">Available coins</span><b>${balance}</b></div>
+        <div class="pro-row"><span class="pro-muted">Room</span><b>${esc(room)}</b></div>
+        <div class="pro-row"><span class="pro-muted">Connection</span><b id="proConnection">${navigator.onLine?'Online':'Offline'}</b></div>
+      </div>
+      <div class="pro-card"><div class="pro-title">Appearance</div>
+        <div class="pro-row"><span>Dark mode</span><div id="proDark" class="pro-switch ${document.body.classList.contains('dark-ui')?'on':''}"><i></i></div></div>
+        <div style="font-weight:800;font-size:13px;margin:12px 0 9px">Accent color</div>
+        <div class="pro-colors">
+          ${['#1769ff','#7c3aed','#059669','#ea580c','#db2777'].map(c=>`<button class="pro-color ${getComputedStyle(document.documentElement).getPropertyValue('--pro-primary').trim()===c?'sel':''}" data-pro-color="${c}" style="background:${c}"></button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  if(tab==='coins') {
+    const req=proRequests();
+    return `<div class="pro-head"><div class="pro-brand">Coins</div><div class="pro-room">${balance} coins</div></div>
+    <div class="pro-wrap">
+      <div class="pro-card"><div class="pro-muted">Current balance</div><div class="pro-balance">${balance}</div>
+        <div class="pro-actions" style="margin-top:14px">
+          <button class="pro-btn primary" data-pro-coin="deposit">＋ Coin income</button>
+          <button class="pro-btn" data-pro-coin="withdraw">− Coin expense</button>
+        </div><div id="proCoinForm"></div>
+        </div>
+      </div>
+      <div class="pro-card"><div class="pro-title">Requests</div>
+        ${req.length?`<div class="pro-list">${req.slice().reverse().map(q=>`<div class="pro-item"><b>${q.type==='deposit'?'Income':'Expense'} • ${q.amount||0} coins</b><br><small>${q.status||'pending'}</small></div>`).join('')}</div>`:'<div class="pro-empty">No coin requests yet.</div>'}
+      </div>
+    </div>`;
+  }
+
+  if(tab==='history'){
+    const h=proHistory();
+    return `<div class="pro-head"><div class="pro-brand">History</div><div class="pro-room">${h.length} records</div></div>
+    <div class="pro-wrap"><div class="pro-card">
+      <div class="pro-title">Game history</div>
+      ${h.length?`<div class="pro-list">${h.slice().reverse().map(x=>`<div class="pro-item"><b>${esc(x.winnerName||x.winner||'Completed round')}</b><br><small>${esc(x.shapeName||x.shape||'Bingo')} • ${x.fee??''}</small></div>`).join('')}</div>`:'<div class="pro-empty">Game history will appear here.</div>'}
+    </div></div>`;
+  }
+
+  if(tab==='players'){
+    const ps=Object.values(S.players||{});
+    return `<div class="pro-head"><div class="pro-brand">Players</div><div class="pro-room">${ps.length} players</div></div>
+    <div class="pro-wrap"><div class="pro-card">
+      <div class="pro-title">Players in room</div>
+      ${ps.length?`<div class="pro-list">${ps.map(x=>`<div class="pro-item"><b>${esc(x.name||'Player')}</b><br><small>ID: ${esc(x.playerId||'—')} · <span style="color:${x.online===false?'#d52b2b':'#159447'}">${x.online===false?'Offline':'Online'}</span></small></div>`).join('')}</div>`:'<div class="pro-empty">No players yet.</div>'}
+    </div></div>`;
+  }
+
+  // Game tab: close panel and reveal the original, fully functional game UI.
+  return '';
+}
+function showProCoinForm(kind){
+  const box=$('proCoinForm');
+  if(!box)return;
+  const title=kind==='deposit'?'የCoin ገቢ ጥያቄ':'የCoin ወጪ ጥያቄ';
+  box.innerHTML=`<div class="panel" style="margin-top:12px"><b>${title}</b><div class="row" style="margin-top:9px;display:flex;gap:8px;align-items:center"><input id="proCoinAmount" type="number" min="1" step="1" inputmode="numeric" placeholder="Coin amount" style="flex:1"><button class="btn" data-pro-confirm="${kind}">አረጋግጥ</button><button class="btn ghost" data-pro-cancel-coin="1">ሰርዝ</button></div></div>`;
+  $('proCoinAmount')?.focus();
+}
+
+function showProTab(tab){
+  proTab=tab;
+  const panel=$('proPanel'), nav=$('proNav'), app=$('app');
+  document.querySelectorAll('.pro-nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.proTab===tab));
+  if(tab==='game'){
+    panel.classList.remove('show'); app.classList.remove('ui-game-hidden');
+  }else{
+    panel.innerHTML=proPanelHtml(tab); panel.classList.add('show'); app.classList.add('ui-game-hidden');
+  }
+}
+function updateProUI(){
+  const ready = S.screen==='lobbyPlayer' || S.screen==='lobbyCaller' || S.screen==='playerGame' || S.screen==='callerGame' || S.screen==='joinWaiting';
+  $('proNav')?.classList.toggle('show',ready);
+  if(ready && $('proPanel')?.classList.contains('show')) $('proPanel').innerHTML=proPanelHtml(proTab);
+  if(!ready){ $('proPanel')?.classList.remove('show'); $('app')?.classList.remove('ui-game-hidden'); }
+}
 function render(){
   document.body.dataset.role = S.isCaller ? 'caller' : 'player';
   const a = document.activeElement;
   const keep = a && a.dataset && a.dataset.f ? { f: a.dataset.f, s: a.selectionStart } : null;
   $('app').innerHTML = view();
+  updateProUI();
   if (keep) {
     const el = document.querySelector('[data-f="' + keep.f + '"]');
     if (el) { try { el.focus(); if (keep.s != null) el.setSelectionRange(keep.s, keep.s); } catch (e) {} }
   }
 }
+
+document.addEventListener('click', (e)=>{
+  const nav=e.target.closest('.pro-nav-btn');
+  if(nav){ showProTab(nav.dataset.proTab); return; }
+  const color=e.target.closest('[data-pro-color]');
+  if(color){
+    const c=color.dataset.proColor;
+    document.documentElement.style.setProperty('--pro-primary',c);
+    ls.set('bingo_ui_color',c);
+    if(proTab==='profile') showProTab('profile');
+    return;
+  }
+  if(e.target.closest('#proDark')){
+    document.body.classList.toggle('dark-ui');
+    ls.set('bingo_dark_ui',document.body.classList.contains('dark-ui')?'1':'0');
+    if(proTab==='profile') showProTab('profile');
+    return;
+  }
+  const coin=e.target.closest('[data-pro-coin]');
+  if(coin){ showProCoinForm(coin.dataset.proCoin); return; }
+  const cancelCoin=e.target.closest('[data-pro-cancel-coin]');
+  if(cancelCoin){ const box=$('proCoinForm'); if(box)box.innerHTML=''; return; }
+  const confirmCoin=e.target.closest('[data-pro-confirm]');
+  if(confirmCoin){
+    const input=$('proCoinAmount');
+    const n=Math.floor(Number(input?.value));
+    if(!Number.isFinite(n)||n<=0){ toast('Valid amount required'); return; }
+    const kind=confirmCoin.dataset.proConfirm;
+    requestCoin(kind,n).then(()=>{ const box=$('proCoinForm'); if(box)box.innerHTML=''; }).catch(()=>{});
+  }
+});
+window.addEventListener('online',()=>{ const x=$('proConnection'); if(x)x.textContent='Online'; });
+window.addEventListener('offline',()=>{ const x=$('proConnection'); if(x)x.textContent='Offline'; });
+if(ls.get('bingo_dark_ui')==='1') document.body.classList.add('dark-ui');
+if(ls.get('bingo_ui_color')) document.documentElement.style.setProperty('--pro-primary',ls.get('bingo_ui_color'));
 
 render();
 boot();
@@ -872,7 +1125,7 @@ setInterval(() => {
   if (S.round && S.round.status === 'claim') {
     document.querySelectorAll('.cdv').forEach((el) => { el.textContent = cdLeft(); });
   }
-}, 250);
-</script>
+}, 250)
+  </script>
 </body>
 </html>

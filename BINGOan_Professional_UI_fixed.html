@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BINGOan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F4EF; --surface:#FFFFFF; --surface2:#E3EAE2; --ink:#15231B; --muted:#5C6B62; --line:#D1DBD0;
+  --green:#0E6B3D; --green-ink:#FFFFFF; --gold:#E4A11B; --gold-ink:#2A1D00; --red:#C5352B;
+  --ok-bg:#E1F2E7; --bad-bg:#F9DEDA; --warn-bg:#FBEBD0;
+  --accent:#0E6B3D; --accent-ink:#FFFFFF;
+  --font:'Noto Sans Ethiopic','Abyssinica SIL','Nyala',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#101914; --surface:#18241D; --surface2:#22322A; --ink:#ECF2ED; --muted:#98A89E; --line:#2E4036;
+    --green:#3BB472; --green-ink:#052013; --gold:#F0B434; --gold-ink:#241800; --red:#EE6C5F;
+    --ok-bg:#183524; --bad-bg:#3D1E1B; --warn-bg:#3B2E14;
+    --accent:#3BB472; --accent-ink:#052013;
+  }
+}
+/* የአጫዋች ገጾች በቀይ ተለይተው ይታያሉ፤ የተጫዋች ገጾች በአረንጓዴ (ነባሪ) */
+body[data-role="caller"]{ --accent:#C5352B; --accent-ink:#FFFFFF; }
+@media (prefers-color-scheme: dark){
+  body[data-role="caller"]{ --accent:#EE6C5F; --accent-ink:#2B0804; }
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55;-webkit-tap-highlight-color:transparent;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button:disabled{opacity:.5;cursor:not-allowed}
+p{margin:.3rem 0}
+h1,h2{margin:0}
+.muted{color:var(--muted);font-size:14px}
+
+/* ኳስ */
+.ball{width:112px;height:112px;border-radius:50%;background:var(--gold);color:var(--gold-ink);display:flex;align-items:center;justify-content:center;
+  border:6px solid var(--surface);box-shadow:0 0 0 3px var(--gold);font-size:58px;font-weight:800;line-height:1;flex:none}
+.ball.sm{width:80px;height:80px;border-width:4px;font-size:42px}
+
+/* የመክፈቻ ገጽ */
+.splash{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;
+  padding:env(safe-area-inset-top,0px) 16px calc(env(safe-area-inset-bottom,0px) + 28px);opacity:1;transition:opacity .5s ease}
+.splash.hide{opacity:0;pointer-events:none}
+.splash .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.splash h1{font-size:40px;font-weight:800}
+.splash .dev{font-size:15px;color:var(--muted);font-weight:600}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: no-preference){.splash .ball{animation:rise .7s ease both}.splash .dev{animation:rise .7s ease .5s both}}
+@media (prefers-reduced-motion: reduce){.splash{transition:none}}
+
+main{max-width:480px;margin:0 auto;padding:22px 16px 40px;display:flex;flex-direction:column;gap:14px;min-height:100vh}
+.hero{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 0 8px;text-align:center}
+.hero h1{font-size:32px;font-weight:800}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.panel h2{font-size:18px;font-weight:800;margin-bottom:6px}
+.panel.ok{background:var(--ok-bg);border-color:var(--green)}
+.panel.warn{background:var(--warn-bg);border-color:var(--gold)}
+.namelist{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.btn{border:0;border-radius:12px;padding:14px 18px;min-height:56px;font-weight:800;font-size:18px;background:var(--accent);color:var(--accent-ink);width:100%}
+.btn.alt{background:var(--surface2);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--muted);font-weight:600;font-size:15px;min-height:44px}
+.btn.danger{background:var(--bad-bg);color:var(--red)}
+.btn.small{width:auto;min-height:36px;padding:6px 12px;font-size:13px;border-radius:9px}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input{width:100%;min-height:52px;border:2px solid var(--line);border-radius:12px;padding:8px 14px;background:var(--surface);color:var(--ink);font-size:18px}
+input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px}
+.err{background:var(--bad-bg);color:var(--red);border-radius:10px;padding:10px 12px;font-weight:600}
+.ok{background:var(--ok-bg);border-radius:10px;padding:10px 12px}
+.roomcode{font-size:64px;font-weight:800;letter-spacing:.18em;text-align:center;line-height:1.2;padding-inline-start:.18em}
+.plist{list-style:none;margin:8px 0 0;padding:0}
+.plist li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
+.plist li:first-child{border-top:0}
+.tag{font-size:12px;font-weight:700;background:var(--ok-bg);color:var(--accent);border-radius:99px;padding:2px 10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.opt{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 6px;min-height:48px;font-weight:700;text-align:center}
+.opt.on{border-color:var(--accent);background:var(--ok-bg)}
+.shapebtn{display:block;width:100%;text-align:start;border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;min-height:52px;margin-top:8px}
+.shapebtn b{display:block;font-size:15px}
+.shapebtn span{font-size:13px;color:var(--muted)}
+.shapebtn.on{border-color:var(--accent);background:var(--ok-bg)}
+.pick{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.pick button{min-height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-weight:700}
+.pick button.mine{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pick button.taken{background:var(--surface2);color:var(--muted);border-style:dashed}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}
+.stat3 div{background:var(--surface2);border-radius:10px;padding:8px 6px;text-align:center}
+.stat3 small{display:block;color:var(--muted);font-size:11px}
+.stat3 b{font-size:16px}
+.dev-foot{margin-top:auto;text-align:center;color:var(--muted);font-size:13px;padding-top:18px}
+.callball{width:96px;height:96px;border-radius:50%;background:var(--gold);color:var(--gold-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;border:5px solid var(--surface);box-shadow:0 0 0 3px var(--gold);line-height:1;flex:none}
+.callball .l{font-size:18px;font-weight:800}
+.callball .n{font-size:38px;font-weight:800}
+.callball.empty{background:var(--surface2);box-shadow:0 0 0 3px var(--line);color:var(--muted)}
+.ballrow{display:flex;align-items:center;gap:14px}
+.board{display:grid;grid-template-columns:16px repeat(15,1fr);gap:2px;font-size:10px;margin-top:10px}
+.board .l{font-weight:800;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px}
+.board .c{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;background:var(--surface2);color:var(--muted)}
+.board .c.on{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.board .c.last{background:var(--gold);color:var(--gold-ink);font-weight:800}
+.cardgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}
+.cardgrid .h{text-align:center;font-weight:800;color:var(--accent);font-size:16px}
+.cardgrid button{aspect-ratio:1;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:9px;font-weight:700;font-size:17px;padding:0}
+.cardgrid button.m{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.cardgrid button.free{background:var(--gold);color:var(--gold-ink);border-color:var(--gold);font-size:11px}
+.cardbox{position:relative}
+.cardbox.out .cardgrid{opacity:.35}
+.cardbox .stamp{position:absolute;inset:34px 0 0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.cardbox .stamp span{background:var(--red);color:#fff;font-weight:800;padding:5px 12px;border-radius:8px;transform:rotate(-6deg)}
+.bingobtn{width:100%;min-height:60px;border:0;border-radius:12px;background:var(--red);color:#fff;font-weight:800;font-size:22px;margin-top:4px}
+.cdbox{display:flex;align-items:center;gap:10px}
+.cdnum{width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;font-weight:600;max-width:calc(100% - 28px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;text-align:center}
+.toast.show{opacity:1}
+
+.offline-name{color:#c5352b!important}.request{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.small{padding:8px 10px!important;font-size:13px!important}.request-list .panel{margin-top:8px}
+</style>
+
+<style id="bingoProUI">
+:root{--pro-primary:#1769ff;--pro-bg:#f5f7fb;--pro-card:#fff;--pro-text:#172033;--pro-muted:#7b8496;--pro-line:rgba(23,32,51,.09)}
+body{background:var(--pro-bg)}
+body.dark-ui{--pro-bg:#0d1118;--pro-card:#151b24;--pro-text:#eef3fb;--pro-muted:#9aa6b8;--pro-line:rgba(255,255,255,.10);background:var(--pro-bg);color:var(--pro-text)}
+#app.ui-game-hidden{display:none}
+#proNav{display:none;position:fixed;left:50%;bottom:9px;transform:translateX(-50%);z-index:9999;width:min(720px,calc(100% - 12px));grid-template-columns:repeat(5,1fr);gap:4px;padding:7px;background:rgba(255,255,255,.94);backdrop-filter:blur(18px);border:1px solid var(--pro-line);border-radius:23px;box-shadow:0 12px 38px rgba(0,0,0,.16)}
+.dark-ui #proNav{background:rgba(21,27,36,.94)}
+#proNav.show{display:grid}
+.pro-nav-btn{border:0;background:transparent;color:var(--pro-muted);border-radius:16px;padding:7px 2px;font:800 10px system-ui;cursor:pointer}
+.pro-nav-btn b{display:block;font-size:19px;line-height:20px;margin-bottom:2px}
+.pro-nav-btn.active{background:color-mix(in srgb,var(--pro-primary) 11%,transparent);color:var(--pro-primary)}
+#proPanel{display:none;position:fixed;inset:0;z-index:9998;background:var(--pro-bg);overflow:auto;padding:14px 14px 95px;color:var(--pro-text)}
+#proPanel.show{display:block}
+.pro-head{max-width:720px;margin:0 auto 14px;display:flex;align-items:center;justify-content:space-between}
+.pro-brand{font-size:21px;font-weight:950}.pro-brand span{color:#ff8c00}
+.pro-room{font-size:11px;color:var(--pro-muted);background:var(--pro-card);border:1px solid var(--pro-line);padding:7px 10px;border-radius:999px}
+.pro-wrap{max-width:720px;margin:auto}
+.pro-card{background:var(--pro-card);border:1px solid var(--pro-line);border-radius:21px;padding:16px;margin-bottom:12px;box-shadow:0 8px 25px rgba(20,30,50,.06)}
+.pro-profile{display:flex;gap:12px;align-items:center}.pro-avatar{width:55px;height:55px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,var(--pro-primary),#65a5ff);color:#fff;font-weight:950;font-size:20px}
+.pro-name{font-weight:900;font-size:18px}.pro-id{font-size:11px;color:var(--pro-muted);margin-top:3px}
+.pro-title{font-size:16px;font-weight:900;margin-bottom:12px}.pro-muted{color:var(--pro-muted);font-size:12px}
+.pro-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--pro-line)}.pro-row:last-child{border-bottom:0}
+.pro-balance{font-size:31px;font-weight:950}.pro-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.pro-btn{border:0;border-radius:14px;padding:12px;font-weight:850;cursor:pointer;background:#edf2f9;color:var(--pro-text)}.pro-btn.primary{background:var(--pro-primary);color:#fff}
+.pro-list{display:grid;gap:8px}.pro-item{padding:12px;border:1px solid var(--pro-line);border-radius:14px}.pro-item small{color:var(--pro-muted)}
+.pro-empty{text-align:center;padding:28px 8px;color:var(--pro-muted);font-size:13px}
+.pro-colors{display:flex;gap:9px;flex-wrap:wrap}.pro-color{width:30px;height:30px;border-radius:50%;border:3px solid var(--pro-card);box-shadow:0 0 0 1px #cbd3df;cursor:pointer}.pro-color.sel{box-shadow:0 0 0 2px var(--pro-primary)}
+.pro-switch{width:48px;height:28px;border-radius:20px;background:#d9dfeb;padding:3px;cursor:pointer}.pro-switch i{display:block;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}.pro-switch.on{background:var(--pro-primary)}.pro-switch.on i{transform:translateX(20px)}
+@media(max-width:420px){#proPanel{padding-left:10px;padding-right:10px}}
+</style>
+</head>
+<body>
+
+<div class="splash" id="splash" aria-live="polite">
+  <div class="mid">
+    <div class="ball" aria-hidden="true">B</div>
+    <h1 style="color:#black;">BINGO<span style="color:#FF8C00;">an</span></h1>
+  </div>
+  <div class="dev">Developed by Andualem</div>
+</div>
+
+<main id="app"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="proPanel"></div>
+<nav id="proNav" aria-label="Main navigation">
+  <button class="pro-nav-btn active" data-pro-tab="profile"><b>👤</b>Profile</button>
+  <button class="pro-nav-btn" data-pro-tab="coins"><b>🪙</b>Coins</button>
+  <button class="pro-nav-btn" data-pro-tab="game"><b>🎯</b>Game</button>
+  <button class="pro-nav-btn" data-pro-tab="history"><b>📜</b>History</button>
+  <button class="pro-nav-btn" data-pro-tab="players"><b>👥</b>Players</button>
+</nav>
+
+
+<script type="module">
+  
+
+  
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCzg6CzEz9e4Q9icfdoegSZkJh-TQjqIgc",
+  authDomain: "bingogame-40fa0.firebaseapp.com",
+  databaseURL: "https://bingogame-40fa0-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bingogame-40fa0",
+  storageBucket: "bingogame-40fa0.firebasestorage.app",
+  messagingSenderId: "656225626762",
+  appId: "1:656225626762:web:4c80ead178e340f24e9b73"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+const CARD_COUNT = 30;
+const FEES = [10,50, 100, 150, 200, 300, 400, 500, 1000];
+const TOPUPS = [10,50, 100, 500];
+const SHAPES = [
+  { id: 'line', name: 'አንድ መስመር', hint: 'አንድ አግድም ወይም አንድ ቋሚ መስመር' },
+  { id: 'two', name: 'ሁለት መስመር (ማንኛውም)', hint: 'ማንኛውም ሁለት መስመሮች፣ አግድምም ቋሚም ሊሆኑ ይችላሉ' },
+  { id: 'twoV', name: 'ሁለት ቋሚ መስመር', hint: 'ማንኛውም ሁለት ቋሚ መስመሮች' },
+  { id: 'twoH', name: 'ሁለት አግድም መስመር', hint: 'ማንኛውም ሁለት አግድም መስመሮች' },
+  { id: 'x', name: 'X', hint: 'ሁለቱም ሰያፍ መስመሮች' },
+  { id: 'square', name: 'ካሬ', hint: 'የካርዱ አራቱም ዳርቻ (16 ሳጥኖች)' },
+  { id: 'full', name: 'ሙሉ ካርድ', hint: 'ሁሉም ሳጥኖች ሲሞሉ' }
+];
+function shapeOf(id){ return SHAPES.find((s) => s.id === id) || SHAPES[0]; }
+const CALL_MS = 5000;
+const WINDOW_MS = 5000;
+const LETTERS = 'BINGO';
+function letterOf(n){ return LETTERS[Math.floor((n - 1) / 15)]; }
+
+/* ---------- ካርድ ማመንጫ (ሁለቱም ወገን ተመሳሳይ ካርድ ያገኛሉ) ---------- */
+function rngFor(seed){
+  let a = (seed * 2654435761) >>> 0;
+  return function(){
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const cardCache = {};
+function cardOf(no){
+  if (cardCache[no]) return cardCache[no];
+  const r = rngFor(no * 7919 + 13), cols = [];
+  for (let c = 0; c < 5; c++){
+    const pool = [];
+    for (let i = c * 15 + 1; i <= c * 15 + 15; i++) pool.push(i);
+    for (let i = pool.length - 1; i > 0; i--){
+      const j = Math.floor(r() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    cols.push(pool.slice(0, 5));
+  }
+  const grid = [];
+  for (let row = 0; row < 5; row++){
+    const line = [];
+    for (let c = 0; c < 5; c++) line.push(cols[c][row]);
+    grid.push(line);
+  }
+  grid[2][2] = 0;
+  cardCache[no] = grid;
+  return grid;
+}
+function isMarked(card, r, c, set){ const v = card[r][c]; return v === 0 || set.has(v); }
+function lineCounts(card, set){
+  let rows = 0, cols = 0;
+  for (let i = 0; i < 5; i++){
+    let rw = true, cl = true;
+    for (let j = 0; j < 5; j++){
+      if (!isMarked(card, i, j, set)) rw = false;
+      if (!isMarked(card, j, i, set)) cl = false;
+    }
+    if (rw) rows++;
+    if (cl) cols++;
+  }
+  return { rows, cols };
+}
+function allWhere(card, set, fn){
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++){ if (fn(r, c) && !isMarked(card, r, c, set)) return false; }
+  return true;
+}
+function shapeDone(card, shape, set){
+  const lc = lineCounts(card, set);
+  switch (shape){
+    case 'line': return lc.rows + lc.cols >= 1;
+    case 'two': return lc.rows + lc.cols >= 2;
+    case 'twoV': return lc.cols >= 2;
+    case 'twoH': return lc.rows >= 2;
+    case 'x': return allWhere(card, set, (r, c) => r === c || r + c === 4);
+    case 'square': return allWhere(card, set, (r, c) => r === 0 || r === 4 || c === 0 || c === 4);
+    case 'full': return allWhere(card, set, () => true);
+  }
+  return false;
+}
+function winsOnLast(card, shape, calledArr){
+  if (!calledArr.length) return false;
+  if (!shapeDone(card, shape, new Set(calledArr))) return false;
+  return !shapeDone(card, shape, new Set(calledArr.slice(0, -1)));
+}
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ls = {
+  get(k){ try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k){ try { localStorage.removeItem(k); } catch (e) {} }
+};
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ---------- ሁኔታ ---------- */
+const S = {
+  screen: 'loading',      // loading | role | player | callerCode | callerHome | lobbyCaller | lobbyPlayer | fatal
+  uid: null, isCaller: false,
+  room: null, meta: null, players: {}, round: null, cards: {}, claims: {}, joinRequests: {}, coinRequests: {}, currentPlayerId: null, pendingJoin: null,
+  marks: {}, chooser: false,
+  roundForm: { shape: 'line', fee: 100 },
+  form: { name: ls.get('bingo_name') || '', playerId: ls.get('bingo_player_id') || '', room: '', code: '' },
+  busy: false, err: ''
+};
+let unsubs = [];
+function unsubscribeAll(){ unsubs.forEach((f) => { try { f(); } catch (e) {} }); unsubs = []; }
+
+function isDenied(err){ return err && (err.code === 'PERMISSION_DENIED' || /permission/i.test(err.message || '') || /permission/i.test(err.code || '')); }
+  /* ---------- መጀመሪያ ---------- */
+async function boot(){
+  try {
+    const res = await Promise.all([signInAnonymously(auth), delay(2200)]);
+    S.uid = res[0].user.uid;
+  } catch (err) {
+    hideSplash();
+    S.screen = 'fatal';
+    S.err = err.code || err.message || 'unknown';
+    render();
+    return;
+  }
+  await restore();
+  hideSplash();
+  render();
+}
+function hideSplash(){
+  const s = $('splash');
+  s.classList.add('hide');
+  setTimeout(() => { s.style.display = 'none'; }, 600);
+}
+async function checkCaller(){
+  try { const s = await get(ref(db, 'callers/' + S.uid)); return s.exists(); } catch (e) { return false; }
+}
+async function enterExistingRoom(code, owner){
+  try {
+    const m = await get(ref(db, `rooms/${code}/meta`));
+    if (!m.exists()) { ls.del('bingo_room'); return false; }
+    if (owner && m.val().owner !== S.uid) { ls.del('bingo_room'); return false; }
+    if (!owner) {
+      const me = await get(ref(db, `rooms/${code}/players/${S.uid}`));
+      if (!me.exists()) { ls.del('bingo_room'); return false; }
+    }
+    S.room = code;
+    subscribeRoom(code);
+    S.screen = owner ? 'lobbyCaller' : 'lobbyPlayer';
+    return true;
+  } catch (e) { ls.del('bingo_room'); return false; }
+}
+async function restore(){
+  const role = ls.get('bingo_role'), room = ls.get('bingo_room');
+  if (role === 'caller') {
+    S.isCaller = await checkCaller();
+    if (!S.isCaller) { ls.del('bingo_room'); S.screen = 'callerCode'; return; }
+    if (room && await enterExistingRoom(room, true)) { setupPresence(room); return; }
+    S.screen = 'callerHome';
+    return;
+  }
+  if (role === 'player') {
+    if (room && await enterExistingRoom(room, false)) { setupPresence(room); return; }
+    S.screen = 'player';
+    return;
+  }
+  S.screen = 'role';
+}
+
+/* ---------- identity / coin / presence ---------- */
+function myPlayer(){ return S.players[S.uid] || null; }
+function cacheKey(room,pid){ return 'bingo_balance_'+room+'_'+pid; }
+function cacheBalance(room,pid,bal){ if(room&&pid&&Number.isFinite(+bal)) ls.set(cacheKey(room,pid),String(+bal)); }
+function cachedBalance(room,pid){ const v=ls.get(cacheKey(room,pid)); return v==null?null:(+v||0); }
+function requestId(){ return S.uid+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); }
+let presenceUnsub = null;
+function setupPresence(code){
+  if(!code || !S.uid)return;
+  if(presenceUnsub){ try{ presenceUnsub(); }catch(e){} presenceUnsub=null; }
+  const r=ref(db,`rooms/${code}/players/${S.uid}/online`);
+  const connected=ref(db,'.info/connected');
+  presenceUnsub=onValue(connected, snap=>{
+    if(snap.val()!==true)return;
+    onDisconnect(r).set(false).then(()=>set(r,true)).catch(()=>{});
+  });
+  if(navigator.onLine) set(r,true).catch(()=>{});
+}
+async function requestIdentityTransfer(existing,name,pid,code){
+ const rid=requestId(); S.pendingJoin=rid;
+ await set(ref(db,`rooms/${code}/joinRequests/${rid}`),{requestId:rid,newUid:S.uid,oldUid:existing.uid,name,playerId:pid,status:'pending',at:serverTimestamp()});
+ ls.set('bingo_name',name); ls.set('bingo_player_id',pid); ls.set('bingo_room',code); S.room=code; subscribeRoom(code); S.screen='joinWaiting'; render();
+}
+async function approveJoin(rid,approve){
+ const q=S.joinRequests[rid]; if(!q||!S.room)return; const base=`rooms/${S.room}`;
+ try{ if(!approve){await update(ref(db,`${base}/joinRequests/${rid}`),{status:'rejected',decidedAt:serverTimestamp()});return;}
+  const oldSnap=await get(ref(db,`${base}/players/${q.oldUid}`)); const old=oldSnap.exists()?oldSnap.val():{name:q.name,playerId:q.playerId,balance:0};
+  const updates={}; updates[`${base}/players/${q.newUid}`]={...old,name:q.name,playerId:q.playerId,online:true,lastReconnectedAt:serverTimestamp()}; updates[`${base}/joinRequests/${rid}/status`]='approved'; updates[`${base}/joinRequests/${rid}/decidedAt`]=serverTimestamp();
+  const cardsSnap=await get(ref(db,`${base}/cards`)); const cards=cardsSnap.val()||{}; Object.keys(cards).forEach(no=>{if(cards[no]===q.oldUid)updates[`${base}/cards/${no}`]=q.newUid;});
+  await update(ref(db),updates); await remove(ref(db,`${base}/players/${q.oldUid}`));
+ }catch(e){toast('የመግቢያ ፍቃድ አልተሳካም።');}
+}
+async function requestCoin(kind, suppliedAmount){
+ const p=myPlayer(); if(!S.room||!p)return;
+ const raw=suppliedAmount==null?prompt(kind==='deposit'?'ለተጨማሪ ኮይን የምትፈልገውን መጠን ጻፍ፦':'ለማውጣት የምትፈልገውን ኮይን መጠን ጻፍ፦','100'):suppliedAmount;
+ const amount=+raw;
+ if(!Number.isInteger(amount)||amount<=0){toast('ትክክለኛ የኮይን መጠን ጻፍ።');return;} if(kind==='withdraw'&&amount>(+p.balance||0)){toast('ያለህ ኮይን በቂ አይደለም።');return;}
+ const rid=requestId(); await set(ref(db,`rooms/${S.room}/coinRequests/${rid}`),{requestId:rid,uid:S.uid,name:p.name,playerId:p.playerId,kind,amount,status:'pending',at:serverTimestamp()}); toast(kind==='deposit'?'የኮይን ገቢ ጥያቄህ ተልኳል።':'የኮይን ወጪ ጥያቄህ ተልኳል።');
+}
+async function decideCoin(rid,approve){
+ const q=S.coinRequests[rid]; if(!q||!S.room||q.status!=='pending')return; try{ if(!approve){await update(ref(db,`rooms/${S.room}/coinRequests/${rid}`),{status:'rejected',decidedAt:serverTimestamp()});return;}
+  const ps=await get(ref(db,`rooms/${S.room}/players/${q.uid}`)); if(!ps.exists())return; const p=ps.val(),old=+p.balance||0,amount=+q.amount||0;
+  if(q.kind==='withdraw'&&old<amount){await update(ref(db,`rooms/${S.room}/coinRequests/${rid}`),{status:'rejected',reason:'insufficient-balance',decidedAt:serverTimestamp()});return;}
+  const next=q.kind==='deposit'?old+amount:old-amount; await update(ref(db),{[`rooms/${S.room}/players/${q.uid}/balance`]:next,[`rooms/${S.room}/coinRequests/${rid}/status`]:'approved',[`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp()});
+ }catch(e){toast('የኮይን ጥያቄውን ማስፈጸም አልተቻለም።');}
+}
+
+/* ---------- ክፍል መከታተል ---------- */
+let lastRoundStatus;
+function subscribeRoom(code){
+  unsubscribeAll();
+  lastRoundStatus = undefined;
+  unsubs.push(onValue(ref(db, `rooms/${code}/meta`), (snap) => {
+    if (!snap.exists()) { roomGone(); return; }
+    S.meta = snap.val();
+    render();
+  }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/players`), (snap) => {
+    S.players = snap.val() || {};
+    const me=S.players[S.uid];
+    if(me && me.playerId && me.balance!=null){S.currentPlayerId=me.playerId;cacheBalance(code,me.playerId,+me.balance);}
+    render();
+  }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/joinRequests`), snap=>{
+    S.joinRequests=snap.val()||{};
+    const pending=S.pendingJoin?S.joinRequests[S.pendingJoin]:null;
+    if(!S.isCaller && pending?.status==='approved'){
+      S.currentPlayerId=pending.playerId||S.currentPlayerId;
+      S.screen='lobbyPlayer';
+      setupPresence(code);
+    }
+    render();
+  }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/coinRequests`), snap=>{S.coinRequests=snap.val()||{};render();}));
+  unsubs.push(onValue(ref(db, `rooms/${code}/round`), (snap) => {
+    const existed = snap.exists();
+    const newStatus = existed ? snap.val().status : null;
+    if (!S.isCaller && ['running', 'claim', 'joining'].indexOf(lastRoundStatus) !== -1 && !existed) {
+      toast('አጫዋቹ ዙሩን አቁሟል');
+    }
+    lastRoundStatus = newStatus;
+    S.round = existed ? snap.val() : null;
+    render();
+  }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/cards`), (snap) => {
+    S.cards = snap.val() || {};
+    render();
+  }));
+  unsubs.push(onValue(ref(db, `rooms/${code}/claims`), (snap) => {
+    S.claims = snap.val() || {};
+    onClaimsChanged();
+    render();
+  }));
+}
+function roomGone(){
+  if (S.screen === 'lobbyPlayer') {
+    toast('አጫዋቹ ክፍሉን ዘግቷል');
+    leaveLocal();
+    S.screen = 'player';
+    render();
+  }
+}
+function leaveLocal(){
+  unsubscribeAll();
+  ls.del('bingo_room');
+  S.room = null; S.meta = null; S.players = {}; S.round = null; S.cards = {}; S.claims = {}; S.marks = {}; S.chooser = false;
+  lastRoundStatus = undefined;
+  stopCallerTimers();
+}
+
+/* ---------- ድርጊቶች ---------- */
+function setErr(msg){ S.err = msg; render(); }
+
+async function startCaller(){
+  ls.set('bingo_role', 'caller');
+  S.err = ''; S.busy = true; render();
+  S.isCaller = await checkCaller();
+  S.busy = false;
+  S.screen = S.isCaller ? 'callerHome' : 'callerCode';
+  render();
+}
+async function redeemCode(){
+  const code = (S.form.code || '').trim();
+  if (!/^[A-Z0-9]{4,24}$/.test(code)) return setErr('ኮዱን በትክክል ጻፍ (ፊደልና ቁጥር ብቻ)።');
+  S.busy = true; S.err = ''; render();
+  try {
+    await update(ref(db), {
+      ['callers/' + S.uid]: { code: code, at: serverTimestamp() },
+      ['activationCodes/' + code + '/usedBy']: S.uid
+    });
+    S.isCaller = true; S.screen = 'callerHome'; S.form.code = '';
+  } catch (err) {
+    S.err = isDenied(err) ? 'ኮዱ ትክክል አይደለም ወይም ቀድሞ ተጠቅሟል።' : 'ስህተት፦ ' + (err.code || err.message);
+  }
+  S.busy = false; render();
+}
+async function openRoom(){
+  S.busy = true; S.err = ''; render();
+  try {
+    let code = null;
+    for (let i = 0; i < 12; i++) {
+      const c = String(Math.floor(1000 + Math.random() * 9000));
+      const s = await get(ref(db, `rooms/${c}/meta`));
+      if (!s.exists()) { code = c; break; }
+    }
+    if (!code) throw { code: 'busy' };
+    await set(ref(db, `rooms/${code}/meta`), { owner: S.uid, createdAt: serverTimestamp(), status: 'open' });
+    ls.set('bingo_room', code);
+    S.room = code; subscribeRoom(code); S.screen = 'lobbyCaller';
+  } catch (err) {
+    S.err = isDenied(err) ? 'አጫዋች ለመሆን መጀመሪያ ኮድ ማስገባት አለብህ።' : 'ክፍል መክፈት አልተቻለም፦ ' + (err.code || err.message);
+  }
+  S.busy = false; render();
+}
+async function closeRoom(){
+  if (!S.room) return;
+  if (!confirm('ክፍሉን ልዝጋው? ሁሉም ተጫዋች ይወጣል።')) return;
+  const code = S.room;
+  unsubscribeAll();
+  try { await remove(ref(db, 'rooms/' + code)); } catch (err) { toast('መዝጋት አልተቻለም፦ ' + (err.code || err.message)); }
+  leaveLocal();
+  S.screen = 'callerHome';
+  render();
+}
+  
+  async function joinRoom(){
+  const name=(S.form.name||'').trim(),pid=(S.form.playerId||'').trim(),code=(S.form.room||'').trim();
+  if(!name)return setErr('ስምህን ጻፍ።'); if(!/^[A-Za-z0-9_-]{3,24}$/.test(pid))return setErr('Player ID ከ3 እስከ 24 ፊደል/ቁጥር ይሁን።'); if(!/^\d{4}$/.test(code))return setErr('የክፍሉን የ4 አሃዝ ኮድ ጻፍ።');
+  S.busy=true;S.err='';render(); try{
+   const meta=await get(ref(db,`rooms/${code}/meta`));if(!meta.exists())throw{code:'no-room'};
+   const snap=await get(ref(db,`rooms/${code}/players`)),players=snap.val()||{}; const existing=Object.keys(players).map(uid=>({uid,p:players[uid]})).find(x=>x.p&&x.p.playerId===pid);
+   if(existing&&existing.uid!==S.uid){await requestIdentityTransfer(existing,name,pid,code);S.busy=false;return;}
+   const oldBalance=cachedBalance(code,pid),balance=existing?(+existing.p.balance||0):(oldBalance==null?0:oldBalance);
+   await set(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:existing?.p?.joinedAt||serverTimestamp(),balance,online:true,lastSeen:serverTimestamp()});
+   ls.set('bingo_name',name);ls.set('bingo_player_id',pid);ls.set('bingo_room',code);S.room=code;S.currentPlayerId=pid;subscribeRoom(code);setupPresence(code);S.screen='lobbyPlayer';
+  }catch(err){S.err=err.code==='no-room'?'ይህ ክፍል አልተገኘም። ኮዱን አጫዋቹን ጠይቅ።':'መግባት አልተቻለም፦ '+(err.code||err.message);} S.busy=false;render();
+}
+
+async function leaveRoom(){
+  const code = S.room;
+  unsubscribeAll();
+  try { await remove(ref(db, `rooms/${code}/players/${S.uid}`)); } catch (e) {}
+  leaveLocal();
+  S.screen = 'player';
+  render();
+}
+
+async function openRound(){
+  if (!S.room) return;
+  S.busy = true; render();
+  try {
+    await set(ref(db, `rooms/${S.room}/round`), { shape: S.roundForm.shape, fee: S.roundForm.fee, status: 'joining', openedAt: serverTimestamp() });
+    await remove(ref(db, `rooms/${S.room}/cards`));
+    await remove(ref(db, `rooms/${S.room}/claims`));
+  } catch (err) { toast('ዙር መክፈት አልተቻለም፦ ' + (err.code || err.message)); }
+  S.busy = false; render();
+}
+async function resetRound(){
+  if (!S.room) return;
+  if (!confirm('ይህን ዙር ልሰርዘው? የተያዙ ካርዶች ይለቀቃሉ።')) return;
+  stopCallerTimers();
+  S.busy = true; render();
+  try {
+    await remove(ref(db, `rooms/${S.room}/round`));
+    await remove(ref(db, `rooms/${S.room}/cards`));
+    await remove(ref(db, `rooms/${S.room}/claims`));
+  } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
+  S.busy = false; render();
+}
+async function stopRound(){
+  if (!S.room || !S.round) return;
+  if (!confirm('ይህን ዙር አሁን ላቁመው?')) return;
+  stopCallerTimers();
+  S.busy = true; render();
+  try {
+    await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], reason: 'cancelled' }, claimDeadline: null });
+    await remove(ref(db, `rooms/${S.room}/claims`));
+  } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
+  S.busy = false; render();
+}
+async function topupPlayer(uid, amount){
+  if (!S.room) return;
+  if (S.round && (S.round.status === 'running' || S.round.status === 'claim')) { toast('ጨዋታው እየተካሄደ ነው፤ ጨዋታው እስኪያልቅ ኮይን መጨመር አይቻልም'); return; }
+  const p = S.players[uid];
+  if (!p) return;
+  try {
+    await set(ref(db, `rooms/${S.room}/players/${uid}/balance`), (p.balance || 0) + amount);
+    toast(p.name + ' ላይ +' + amount + ' ኮይን ተጨምሯል');
+  } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
+}
+async function pickCard(no){
+  if (!S.room || !S.round || S.round.status !== 'joining') return;
+  const owner = S.cards[no];
+  const me = S.players[S.uid] || {};
+  const balance = me.balance || 0;
+  const fee = S.round.fee;
+  try {
+    if (owner === S.uid) {
+      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: null, [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee });
+    } else if (!owner) {
+      if (balance < fee) { toast('በቂ ኮይን የለህም (ያለህ ' + balance + '፣ ያስፈልጋል ' + fee + ')። አጫዋቹን ኮይን እንዲልክልህ ጠይቅ።'); return; }
+      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: S.uid, [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee });
+    }
+  } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
+}
+
+/* ---------- የካውንተር ጨዋታ ሞተር (አጫዋቹ ብቻ) ---------- */
+let drawTimer = null, resolveTimer = null, endTimer = null;
+function stopCallerTimers(){ clearTimeout(drawTimer); clearTimeout(resolveTimer); clearTimeout(endTimer); drawTimer = resolveTimer = endTimer = null; }
+async function startCalling(){
+  if (!S.room || !Object.keys(S.cards).length) { if (!Object.keys(S.cards).length) toast('ቢያንስ አንድ ካርድ መያዝ አለበት'); return; }
+  stopCallerTimers();
+  try {
+    await update(ref(db, `rooms/${S.room}/round`), { status: 'running', called: [], out: {}, result: null, claimDeadline: null, startedAt: serverTimestamp() });
+  } catch (err) { toast('መጀመር አልተቻለም፦ ' + (err.code || err.message)); return; }
+  scheduleDraw(1200);
+}
+function scheduleDraw(ms){ clearTimeout(drawTimer); drawTimer = setTimeout(drawNext, ms); }
+async function drawNext(){
+  if (!S.isCaller || !S.round || S.round.status !== 'running') return;
+  const called = S.round.called || [];
+  if (called.length >= 75) return;
+  let n;
+  do { n = 1 + Math.floor(Math.random() * 75); } while (called.indexOf(n) !== -1);
+  const nextCalled = called.concat([n]);
+  try { await update(ref(db, `rooms/${S.room}/round`), { called: nextCalled }); } catch (err) { toast('ስህተት፦ ' + (err.code || err.message)); return; }
+  if (nextCalled.length >= 75) {
+    clearTimeout(endTimer);
+    endTimer = setTimeout(() => { if (S.round && S.round.status === 'running') finalizeNoWinner(); }, WINDOW_MS + 1000);
+  } else {
+    scheduleDraw(CALL_MS);
+  }
+}
+async function finalizeNoWinner(){
+  if (!S.room) return;
+  try { await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], reason: 'exhausted' } }); } catch (err) {}
+}
+function onClaimsChanged(){
+  if (!S.isCaller || !S.round) return;
+  const ids = Object.keys(S.claims);
+  if (S.round.status === 'running' && ids.length) {
+    clearTimeout(drawTimer); clearTimeout(endTimer);
+    const deadline = Date.now() + WINDOW_MS;
+    update(ref(db, `rooms/${S.room}/round`), { status: 'claim', claimDeadline: deadline }).catch(() => {});
+    resolveTimer = setTimeout(resolveClaims, WINDOW_MS);
+  }
+}
+async function resolveClaims(){
+  if (!S.isCaller || !S.room || !S.round) return;
+  const called = S.round.called || [];
+  const newOut = Object.assign({}, S.round.out || {});
+  const winners = [];
+  const notes = [];
+  const nameOf = (uid) => (S.players[uid] && S.players[uid].name) || 'ተጫዋች';
+  Object.keys(S.claims).forEach((cid) => {
+    const c = S.claims[cid];
+    const cardNo = +c.card;
+    if (S.cards[cardNo] !== c.uid) return;          // ካርዱ የእሱ አይደለም (spoof) — ችላ በል
+    if (newOut[cardNo]) return;                       // ቀድሞ ከዙሩ ወጥቷል
+    if (winsOnLast(cardOf(cardNo), S.round.shape, called)) {
+      winners.push({ card: cardNo, uid: c.uid });
+      notes.push(nameOf(c.uid) + ' ካርድ #' + cardNo + ' በትክክል አሸንፏል!');
+    } else {
+      newOut[cardNo] = true;
+      notes.push(nameOf(c.uid) + ' ካርድ #' + cardNo + ' ላይ ተሳስቶ BINGO ብሏል፤ ካርዱ ከዙሩ ወጥቷል።');
+    }
+  });
+  const note = notes.length ? notes.join(' · ') : null;
+  let updates;
+  const allCardNos = Object.keys(S.cards).map(Number);
+  const allOut = allCardNos.length > 0 && allCardNos.every((n) => newOut[n]);
+  if (winners.length) updates = { status: 'done', out: newOut, result: { noWinner: false, winners }, claimDeadline: null, note: note };
+  else if (allOut) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'allOut' }, claimDeadline: null, note: note };
+  else if (called.length >= 75) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'exhausted' }, claimDeadline: null, note: note };
+  else updates = { status: 'running', out: newOut, claimDeadline: null, note: note };
+  try {
+    await update(ref(db, `rooms/${S.room}/round`), updates);
+    await remove(ref(db, `rooms/${S.room}/claims`));
+  } catch (err) { toast('ስህተት፦ ' + (err.code || err.message)); }
+  if (updates.status === 'running') scheduleDraw(CALL_MS);
+}
+  
+  /* ---------- BINGO ማለት (ተጫዋቹ) ---------- */
+function myEligibleCards(){
+  const mine = Object.keys(S.cards).filter((n) => S.cards[n] === S.uid).map(Number);
+  const out = (S.round && S.round.out) || {};
+  const claimedByMe = new Set(Object.values(S.claims).filter((c) => c.uid === S.uid).map((c) => +c.card));
+  return mine.filter((n) => !out[n] && !claimedByMe.has(n));
+}
+async function claimCard(no){
+  if (!S.room || !S.round) return;
+  const inWindow = S.round.status === 'claim' && S.round.claimDeadline && Date.now() < S.round.claimDeadline;
+  if (S.round.status !== 'running' && !inWindow) return;
+  S.chooser = false;
+  try { await set(ref(db, `rooms/${S.room}/claims/${S.uid}_${no}`), { uid: S.uid, card: no, at: serverTimestamp() }); }
+  catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
+  render();
+}
+function tapBingo(){
+  const elig = myEligibleCards();
+  if (!elig.length) { toast('ለመመዝገብ የቀረ ካርድ የለህም'); return; }
+  if (elig.length === 1) { claimCard(elig[0]); return; }
+  S.chooser = !S.chooser; render();
+}
+function toggleMark(card, n){
+  S.marks[card] = S.marks[card] || {};
+  if (S.marks[card][n]) delete S.marks[card][n]; else S.marks[card][n] = 1;
+  render();
+}
+
+function act(a, d){
+  S.err = '';
+  if (a === 'role-player') { ls.set('bingo_role', 'player'); S.screen = 'player'; }
+  else if (a === 'role-caller') { startCaller(); return; }
+  else if (a === 'back') { ls.del('bingo_role'); S.screen = 'role'; }
+  else if (a === 'join') { joinRoom(); return; }
+  else if (a === 'approvejoin') { approveJoin(d.id,true); return; }
+  else if (a === 'rejectjoin') { approveJoin(d.id,false); return; }
+  else if (a === 'approvecoin') { decideCoin(d.id,true); return; }
+  else if (a === 'rejectcoin') { decideCoin(d.id,false); return; }
+  else if (a === 'deposit') { requestCoin('deposit'); return; }
+  else if (a === 'withdraw') { requestCoin('withdraw'); return; }
+  else if (a === 'redeem') { redeemCode(); return; }
+  else if (a === 'openroom') { openRoom(); return; }
+  else if (a === 'closeroom') { closeRoom(); return; }
+  else if (a === 'leave') { leaveRoom(); return; }
+  else if (a === 'shape') { S.roundForm.shape = d.v; }
+  else if (a === 'fee') { S.roundForm.fee = +d.v; }
+  else if (a === 'openround') { openRound(); return; }
+  else if (a === 'resetround') { resetRound(); return; }
+  else if (a === 'stopround') { stopRound(); return; }
+  else if (a === 'pickcard') { pickCard(+d.n); return; }
+  else if (a === 'topup') { topupPlayer(d.id, +d.v); return; }
+  else if (a === 'startgame') { startCalling(); return; }
+  else if (a === 'newround') { S.round && stopCallerTimers(); remove(ref(db, `rooms/${S.room}/round`)).catch(() => {}); return; }
+  else if (a === 'mark') { toggleMark(d.card, +d.n); return; }
+  else if (a === 'bingo') { tapBingo(); return; }
+  else if (a === 'claimcard') { claimCard(+d.n); return; }
+  render();
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-a]');
+  if (!b || b.disabled) return;
+  act(b.dataset.a, b.dataset);
+});
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (!t.dataset || !t.dataset.f) return;
+  if (t.dataset.f === 'playerId') t.value=t.value.replace(/[^A-Za-z0-9_-]/g,'').slice(0,24);
+  if (t.dataset.f === 'room') t.value = t.value.replace(/\D/g, '').slice(0, 4);
+  if (t.dataset.f === 'code') t.value = t.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24);
+  S.form[t.dataset.f] = t.value;
+});
+
+/* ---------- ስዕል ---------- */
+const foot = '<div class="dev-foot">Developed by Andualem</div>';
+const errBox = () => S.err ? '<div class="err" role="alert">' + esc(S.err) + '</div>' : '';
+function playerList(){
+ const entries=Object.keys(S.players).map(id=>({id,p:S.players[id]})).sort((a,b)=>(a.p.joinedAt||0)-(b.p.joinedAt||0)); if(!entries.length)return '<p class="muted">እስካሁን ማንም አልገባም።</p>';
+ return '<ul class="plist">'+entries.map(x=>{const p=x.p||{},online=p.online!==false,bal=+p.balance||0,name='<span class="'+(online?'':'offline-name')+'">'+esc(p.name||'ስም-አልባ')+'</span>';if(!S.isCaller)return '<li>'+name+(x.id===S.uid?'<span class="tag">አንተ</span>':'')+'</li>';return '<li><div>'+name+'<div class="muted">'+bal+' ኮይን'+(online?'':' · <b style="color:#c5352b">offline</b>')+'</div></div></li>';}).join('')+'</ul>'+(S.isCaller?'<div class="request-list">'+joinRequestHTML()+coinRequestHTML()+'</div>':'');
+}
+function joinRequestHTML(){const qs=Object.values(S.joinRequests).filter(q=>q.status==='pending');if(!qs.length)return '';return '<div class="panel warn" style="margin-top:10px"><h3>የመመለሻ ጥያቄ</h3>'+qs.map(q=>'<div class="request"><div><b>'+esc(q.name)+'</b><div class="muted">ID: '+esc(q.playerId)+'</div></div><div class="row"><button class="btn small" data-a="approvejoin" data-id="'+esc(q.requestId)+'">ፍቀድ</button><button class="btn danger small" data-a="rejectjoin" data-id="'+esc(q.requestId)+'">አትፍቀድ</button></div></div>').join('')+'</div>';}
+function coinRequestHTML(){const qs=Object.values(S.coinRequests).filter(q=>q.status==='pending');if(!qs.length)return '';return '<div class="panel" style="margin-top:10px"><h3>የኮይን ጥያቄዎች</h3>'+qs.map(q=>'<div class="request"><div><b>'+esc(q.name)+'</b><div class="muted">'+(q.kind==='deposit'?'ገቢ':'ወጪ')+' · '+q.amount+' ኮይን</div></div><div class="row"><button class="btn small" data-a="approvecoin" data-id="'+esc(q.requestId)+'">ፍቀድ</button><button class="btn danger small" data-a="rejectcoin" data-id="'+esc(q.requestId)+'">ውድቅ</button></div></div>').join('')+'</div>';}
+
+function boardHTML(called){
+  const last = called.length ? called[called.length - 1] : -1;
+  let h = '<div class="board" aria-label="የተጠሩ ቁጥሮች ሰሌዳ">';
+  for (let L = 0; L < 5; L++) {
+    h += '<div class="l">' + LETTERS[L] + '</div>';
+    for (let i = 1; i <= 15; i++) {
+      const n = L * 15 + i, on = called.indexOf(n) !== -1;
+      h += '<div class="c' + (n === last ? ' last' : on ? ' on' : '') + '">' + n + '</div>';
+    }
+  }
+  return h + '</div>';
+}
+function callBallHTML(called){
+  if (!called.length) return '<div class="callball empty"><span class="n">—</span></div>';
+  const n = called[called.length - 1];
+  return '<div class="callball"><span class="l">' + letterOf(n) + '</span><span class="n">' + n + '</span></div>';
+}
+function cardBoxHTML(no){
+  const g = cardOf(no), out = !!(S.round && S.round.out && S.round.out[no]), mk = S.marks[no] || {};
+  const claimedByMe = Object.values(S.claims).some((c) => c.uid === S.uid && +c.card === no);
+  let h = '<div class="cardbox' + (out ? ' out' : '') + '"><div class="panel"><b>ካርድ #' + no + '</b>' +
+    (claimedByMe ? ' <span class="muted">BINGO ብለሃል…</span>' : '') + '<div class="cardgrid">';
+  for (let c = 0; c < 5; c++) h += '<div class="h">' + LETTERS[c] + '</div>';
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+    const v = g[r][c];
+    if (v === 0) h += '<button class="free" disabled>ነፃ</button>';
+    else h += '<button class="' + (mk[v] ? 'm' : '') + '" data-a="mark" data-card="' + no + '" data-n="' + v + '"' + (out ? ' disabled' : '') + '>' + v + '</button>';
+  }
+  h += '</div></div>';
+  if (out) h += '<div class="stamp"><span>ከዙሩ ወጥቷል</span></div>';
+  return h + '</div>';
+}
+function playerName(uid){ return (S.players[uid] && S.players[uid].name) || 'ተጫዋች'; }
+function noteHTML(){
+  if (!S.round || !S.round.note) return '';
+  return '<div class="panel warn" style="margin-top:10px"><p>' + esc(S.round.note) + '</p></div>';
+}
+function resultHTML(result){
+  if (!result) return '';
+  if (result.noWinner) {
+    const msgs = {
+      cancelled: 'አጫዋቹ ይህን ዙር በእጅ አቁሞታል።',
+      allOut: 'ማንም ትክክለኛ BINGO ስላላለ (የተያዙት ካርዶች ሁሉ በስህተት BINGO በመባላቸው ከዙሩ ወጥተዋል) ዙሩ ተዘግቷል።',
+      exhausted: '75ቱም ቁጥሮች ተጠርተዋል፤ በጊዜ ትክክለኛ BINGO ያለ አልነበረም።'
+    };
+    const outList = result.reason === 'allOut'
+      ? '<p class="namelist">የወጡ ካርዶች፦ ' + Object.keys(S.round.out || {}).map(Number).sort((a, b) => a - b)
+          .map((n) => '#' + n + ' (' + esc(playerName(S.cards[n])) + ')').join('፣ ') + '</p>'
+      : '';
+    return '<div class="panel warn"><h2>ማንም አላሸነፈም</h2><p>' + (msgs[result.reason] || msgs.exhausted) + '</p>' + outList + '</div>';
+  }
+  const mine = result.winners.some((w) => w.uid === S.uid);
+  return '<div class="panel ok"><h2>BINGO! ዙሩ አለቀ</h2><p>አሸናፊ ካርዶች፦ ' +
+    result.winners.map((w) => '#' + w.card + ' (' + esc(playerName(w.uid)) + ')' + (w.uid === S.uid ? ' — አንተ' : '')).join('፣ ') + '</p>' +
+    (mine ? '<p style="font-weight:800;margin-top:4px">አሸንፈሃል! 🎉</p>' : '') + '</div>';
+}
+function cdLeft(){
+  if (!S.round || !S.round.claimDeadline) return WINDOW_MS / 1000;
+  
+  return Math.max(0, Math.ceil((S.round.claimDeadline - Date.now()) / 1000));
+}
+function view(){
+  const dis = S.busy ? ' disabled' : '';
+  switch (S.screen) {
+    case 'fatal':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ግንኙነት አልተሳካም</h1></div>' +
+        '<div class="err">ስህተት፦ ' + esc(S.err) + '</div>' +
+        '<div class="panel"><p>ኢንተርኔትህን አረጋግጥ፣ ከዚያ ገጹን አድስ።</p>' +
+        (S.err.indexOf('operation-not-allowed') >= 0 ? '<p class="muted">Firebase → Authentication → Sign-in method → Anonymous መብራቱን አረጋግጥ።</p>' : '') + '</div>' + foot;
+    case 'role':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ቢንጎ</h1><p class="muted">በአንድ ቦታ ለተሰበሰቡ ጓደኞች</p></div>' +
+        '<button class="btn" data-a="role-player">ተጫዋች ነኝ</button>' +
+        '<button class="btn alt" data-a="role-caller">አጫዋች ነኝ</button>' + foot;
+    case 'player':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ክፍል ግባ</h1></div>' +
+        '<div class="panel"><label for="f-name">ስምህ</label>' +
+        '<input id="f-name" data-f="name" maxlength="20" autocomplete="off" placeholder="ለምሳሌ ሰላም" value="' + esc(S.form.name) + '">' +
+        '<label for="f-playerId">የተጫዋች ID</label>' +
+        '<input id="f-playerId" data-f="playerId" maxlength="24" autocomplete="off" placeholder="ለምሳሌ A1025" value="' + esc(S.form.playerId) + '">' +
+        '<small class="muted">ይህ ID በዚህ ክፍል ውስጥ ልዩ መሆን አለበት።</small>' +
+        '<label for="f-room">የክፍል ኮድ (4 አሃዝ)</label>' +
+        '<input id="f-room" class="code" data-f="room" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000" value="' + esc(S.form.room) + '"></div>' +
+        errBox() +
+        '<button class="btn" data-a="join"' + dis + '>' + (S.busy ? 'እየገባ ነው…' : 'ግባ') + '</button>' +
+        '<button class="btn ghost" data-a="back">ወደ ኋላ</button>' + foot;
+    case 'callerCode':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>አጫዋች ለመሆን</h1></div>' +
+        '<div class="panel"><p>አጫዋች ለመሆን አንድ የማግበሪያ ኮድ ያስፈልጋል። ኮዱን የሚሰጠው የአፑ ባለቤት ብቻ ነው።</p>' +
+        '<label for="f-code">የማግበሪያ ኮድ</label>' +
+        '<input id="f-code" class="code" data-f="code" maxlength="24" autocomplete="off" autocapitalize="characters" value="' + esc(S.form.code) + '"></div>' +
+        errBox() +
+        '<button class="btn" data-a="redeem"' + dis + '>' + (S.busy ? 'እየተረጋገጠ ነው…' : 'አግብር') + '</button>' +
+        '<button class="btn ghost" data-a="back">ወደ ኋላ</button>' + foot;
+    case 'joinWaiting':
+      const jr=S.pendingJoin?S.joinRequests[S.pendingJoin]:null;
+      if(jr&&jr.status==='approved'){S.screen='lobbyPlayer';return view();}
+      if(jr&&jr.status==='rejected')return '<div class="hero"><div class="ball sm">B</div><h1>መግባት አልተፈቀደም</h1><p class="muted">ይህን ማንነት አጫዋቹ አልፈቀደም። አዲስ Player ID ተጠቀም።</p></div><button class="btn" data-a="back">አዲስ ተጫዋች ክፈት</button>'+foot;
+      return '<div class="hero"><div class="ball sm">B</div><h1>ፍቃድ በመጠባበቅ ላይ…</h1><p class="muted">ይህ Player ID ቀድሞ በክፍሉ ተመዝግቧል።</p></div><div class="panel"><b>'+esc(S.form.name)+'</b><div class="muted">ID: '+esc(S.form.playerId)+'</div><p style="margin-top:10px">አጫዋቹ ከፈቀደ የቀድሞ ኮይንና የዚህ ማንነት ውስጥ ያሉ መረጃዎች ይመለሳሉ።</p></div>'+foot;
+    case 'callerHome':
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>እንኳን ደህና መጣህ፣ አጫዋች</h1></div>' +
+        '<div class="panel"><p>አዲስ ክፍል ስትከፍት የ4 አሃዝ ኮድ ይሰጥሃል። ተጫዋቾች ያንን ኮድ ጽፈው ይገባሉ።</p></div>' +
+        errBox() +
+        '<button class="btn" data-a="openroom"' + dis + '>' + (S.busy ? 'እየተከፈተ ነው…' : 'አዲስ ክፍል ክፈት') + '</button>' +
+        '<button class="btn ghost" data-a="back">ወደ መጀመሪያ ገጽ</button>' + foot;
+    case 'lobbyCaller': {
+      const n = Object.keys(S.players).length;
+      const st = S.round ? S.round.status : null;
+      let mid;
+      if (!st || st === 'done') {
+        const resultPanel = (st === 'done' && S.round.result) ? resultHTML(S.round.result) : '';
+        mid = resultPanel + '<div class="panel"><h2>' + (st === 'done' ? 'ቀጣይ ዙር' : 'ዙር ክፈት') + '</h2>' +
+          '<label>ቅርጽ</label>' +
+          SHAPES.map((s) => '<button class="shapebtn' + (S.roundForm.shape === s.id ? ' on' : '') + '" data-a="shape" data-v="' + s.id + '"><b>' + esc(s.name) + '</b><span>' + esc(s.hint) + '</span></button>').join('') +
+          '<label>የካርድ ዋጋ (ኮይን)</label><div class="grid4">' +
+          FEES.map((v) => '<button class="opt' + (S.roundForm.fee === v ? ' on' : '') + '" data-a="fee" data-v="' + v + '">' + v + '</button>').join('') + '</div>' +
+          '<button class="btn" data-a="' + (st === 'done' ? 'newround' : 'openround') + '" style="margin-top:14px"' + (S.busy ? ' disabled' : '') + '>' + (S.busy ? 'እየተከፈተ ነው…' : 'ዙር ክፈት') + '</button></div>';
+      } else if (st === 'joining') {
+        const taken = Object.keys(S.cards).length, pot = taken * S.round.fee;
+        mid = '<div class="panel"><h2>ዙር ክፍት ነው</h2>' +
+          '<div class="stat3"><div><small>ቅርጽ</small><b>' + esc(shapeOf(S.round.shape).name) + '</b></div>' +
+          '<div><small>የካርድ ዋጋ</small><b>' + S.round.fee + '</b></div>' +
+          '<div><small>የተያዙ ካርዶች</small><b>' + taken + '</b></div></div>' +
+          '<p class="muted">ጠቅላላ፦ ' + pot + ' ኮይን። ተጫዋቾች ካርድ እየመረጡ ነው።</p>' +
+          '<button class="btn" data-a="startgame"' + (taken && !S.busy ? '' : ' disabled') + '>ጀምር</button>' +
+          '<button class="btn alt" data-a="resetround" style="margin-top:8px"' + (S.busy ? ' disabled' : '') + '>ዙሩን ሰርዝ</button></div>';
+      } else {
+        const called = S.round.called || [];
+        mid = '<div class="panel"><div class="ballrow">' + callBallHTML(called) +
+          '<div><b>' + esc(shapeOf(S.round.shape).name) + '</b><p class="muted">' + called.length + ' ከ75 ተጠርተዋል</p></div></div>' +
+          (st === 'claim' ? '<div class="ok" style="margin-top:10px"><div class="cdbox"><span class="cdnum cdv">' + cdLeft() + '</span><span>BINGO ተብሏል፣ ማረጋገጫ በመካሄድ ላይ…</span></div></div>' : '') +
+          noteHTML() +
+          boardHTML(called) +
+          '<button class="btn alt" data-a="stopround" style="margin-top:10px"' + (S.busy ? ' disabled' : '') + '>ዙሩን አቁም</button></div>';
+      }
+      return '<div class="hero"><h1>ክፍልህ ክፍት ነው</h1><p class="muted">ተጫዋቾች ይህን ኮድ ይጽፋሉ</p></div>' +
+        '<div class="panel"><div class="roomcode" aria-label="የክፍል ኮድ">' + esc(S.room) + '</div></div>' +
+        mid +
+        '<div class="panel"><h2>ተጫዋቾች (' + n + ')</h2>' + playerList() + '</div>' +
+        '<button class="btn danger" data-a="closeroom">ክፍሉን ዝጋ</button>' + foot;
+    }
+    case 'lobbyPlayer': {
+      const n = Object.keys(S.players).length;
+      const st = S.round ? S.round.status : null;
+      const mineAll = Object.keys(S.cards).filter((k) => S.cards[k] === S.uid).map(Number);
+      const mp=S.players[S.uid]; const myBalance=mp&&mp.balance!=null?(+mp.balance||0):(cachedBalance(S.room,S.currentPlayerId)||0);
+      let mid;
+      if (!S.round) {
+        mid = '<div class="ok"><p>አጫዋቹ ዙር እስኪከፍት ጠብቅ።</p></div>';
+      } else if (st === 'joining') {
+        const sh = shapeOf(S.round.shape), fee = S.round.fee;
+        let cells = '';
+        for (let no = 1; no <= CARD_COUNT; no++) {
+          const owner = S.cards[no];
+          const canAfford = myBalance >= fee;
+          const cls = owner === S.uid ? 'mine' : (owner || !canAfford ? 'taken' : '');
+          const dis = (owner && owner !== S.uid) || (!owner && !canAfford);
+          cells += '<button class="' + cls + '" data-a="pickcard" data-n="' + no + '"' + (dis ? ' disabled' : '') + '>' + no + '</button>';
+        }
+        mid = '<div class="panel"><h2>ቅርጽ፦ ' + esc(sh.name) + '</h2><p class="muted">' + esc(sh.hint) + '</p>' +
+          '<p>የካርድ ዋጋ፦ <b>' + fee + ' ኮይን</b> · ኮይንህ፦ <b>' + myBalance + '</b>' + (mineAll.length ? ' · የያዝካቸው፦ ' + mineAll.map((c) => '#' + c).join(', ') : '') + '</p>' +
+          (myBalance < fee && !mineAll.length ? '<p class="muted">በቂ ኮይን የለህም። አጫዋቹ ኮይን እስኪልክልህ ጠብቅ።</p>' : '') + '</div>' +
+          '<div class="panel"><h2>ካርድ ምረጥ</h2><p class="muted">የተያዘ ካርድ ለሌላ ሰው አይሰጥም። የያዝከውን ድጋሚ ብትነካው ትለቀዋለህ።</p><div class="pick">' + cells + '</div></div>';
+      } else if (st === 'running' || st === 'claim') {
+        const called = S.round.called || [];
+        const elig = myEligibleCards();
+        mid = '<div class="panel"><div class="ballrow">' + callBallHTML(called) +
+          '<div><b>' + esc(shapeOf(S.round.shape).name) + '</b><p class="muted">' + called.length + ' ከ75 ተጠርተዋል</p></div></div></div>';
+        if (st === 'claim') mid += '<div class="ok"><div class="cdbox"><span class="cdnum cdv">' + cdLeft() + '</span><span>BINGO ተብሏል፤ በ' + Math.ceil(WINDOW_MS / 1000) + ' ሰከንድ ውስጥ BINGO ያሉ ሁሉ ይመዘገባሉ።</span></div></div>';
+        mid += noteHTML();
+        if (elig.length) {
+          mid += '<button class="bingobtn" data-a="bingo"' + (S.chooser ? ' disabled' : '') + '>BINGO!</button>';
+          if (S.chooser) mid += '<div class="panel"><b>የትኛው ካርድ?</b><div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">' +
+            elig.map((c) => '<button class="btn" data-a="claimcard" data-n="' + c + '">ካርድ #' + c + '</button>').join('') + '</div></div>';
+        } else if (!mineAll.length) {
+          mid += '<div class="panel"><p class="muted">በዚህ ዙር ካርድ አልያዝክም፤ እየተመለከትክ ነው።</p></div>';
+        }
+        mid += mineAll.map(cardBoxHTML).join('');
+      } else {
+        mid = (S.round.result ? resultHTML(S.round.result) : '') + '<div class="ok"><p>ቀጣዩ ዙር እስኪከፈት ጠብቅ።</p></div>';
+      }
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>'+esc((S.players[S.uid]&&S.players[S.uid].name)||S.form.name)+'</h1><p class="muted">ID: '+esc((S.players[S.uid]&&S.players[S.uid].playerId)||S.form.playerId)+' · ክፍል ' + esc(S.room) + '</p></div>' +
+        '<div class="panel"><div style="font-size:30px;font-weight:800">'+myBalance+' <span class="muted" style="font-size:14px">COINS</span></div><div class="row" style="margin-top:10px"><button class="btn alt small" data-a="deposit">ኮይን ገቢ አድርግ</button><button class="btn ghost small" data-a="withdraw">ኮይን ወጪ አድርግ</button></div></div>' +
+        mid +
+        '<div class="panel"><h2>በክፍሉ ውስጥ (' + n + ')</h2>' + playerList() + '</div>' +
+        '<button class="btn ghost" data-a="leave">ከክፍሉ ውጣ</button>' + foot;
+    }
+    default:
+      return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><p class="muted">እየተጫነ ነው…</p></div>';
+  }
+}
+
+let proTab = 'profile';
+
+function proInitial(name){
+  const s = String(name || '?').trim();
+  return s ? s.charAt(0).toUpperCase() : '?';
+}
+function proCoins(p){
+  if(!p) return 0;
+  return Number(p.balance ?? p.coins ?? p.coin ?? 0) || 0;
+}
+function proHistory(){
+  const h = S.history || S.gameHistory || [];
+  return Array.isArray(h) ? h : Object.values(h || {});
+}
+function proRequests(){
+  const q = S.coinRequests || {};
+  return Object.values(q || {});
+}
+function proPanelHtml(tab){
+  const me = myPlayer ? myPlayer() : null;
+  const name = me?.name || S.form?.name || 'Player';
+  const pid = me?.playerId || S.form?.playerId || '—';
+  const room = S.room || S.form?.room || '—';
+  const balance = proCoins(me);
+  const role = S.isCaller ? 'Caller' : 'Player';
+
+  if(tab==='profile') return `
+    <div class="pro-head"><div class="pro-brand">BINGO<span>an</span></div><div class="pro-room">Room ${esc(room)}</div></div>
+    <div class="pro-wrap">
+      <div class="pro-card"><div class="pro-profile">
+        <div class="pro-avatar">${esc(proInitial(name))}</div>
+        <div><div class="pro-name">${esc(name)}</div><div class="pro-id">ID: ${esc(pid)}</div><div class="pro-muted">${role}</div></div>
+      </div></div>
+      <div class="pro-card"><div class="pro-title">Account</div>
+        <div class="pro-row"><span class="pro-muted">Available coins</span><b>${balance}</b></div>
+        <div class="pro-row"><span class="pro-muted">Room</span><b>${esc(room)}</b></div>
+        <div class="pro-row"><span class="pro-muted">Connection</span><b id="proConnection">${navigator.onLine?'Online':'Offline'}</b></div>
+      </div>
+      <div class="pro-card"><div class="pro-title">Appearance</div>
+        <div class="pro-row"><span>Dark mode</span><div id="proDark" class="pro-switch ${document.body.classList.contains('dark-ui')?'on':''}"><i></i></div></div>
+        <div style="font-weight:800;font-size:13px;margin:12px 0 9px">Accent color</div>
+        <div class="pro-colors">
+          ${['#1769ff','#7c3aed','#059669','#ea580c','#db2777'].map(c=>`<button class="pro-color ${getComputedStyle(document.documentElement).getPropertyValue('--pro-primary').trim()===c?'sel':''}" data-pro-color="${c}" style="background:${c}"></button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  if(tab==='coins') {
+    const req=proRequests();
+    return `<div class="pro-head"><div class="pro-brand">Coins</div><div class="pro-room">${balance} coins</div></div>
+    <div class="pro-wrap">
+      <div class="pro-card"><div class="pro-muted">Current balance</div><div class="pro-balance">${balance}</div>
+        <div class="pro-actions" style="margin-top:14px">
+          <button class="pro-btn primary" data-pro-coin="deposit">＋ Coin income</button>
+          <button class="pro-btn" data-pro-coin="withdraw">− Coin expense</button>
+        </div><div id="proCoinForm"></div>
+        </div>
+      </div>
+      <div class="pro-card"><div class="pro-title">Requests</div>
+        ${req.length?`<div class="pro-list">${req.slice().reverse().map(q=>`<div class="pro-item"><b>${q.type==='deposit'?'Income':'Expense'} • ${q.amount||0} coins</b><br><small>${q.status||'pending'}</small></div>`).join('')}</div>`:'<div class="pro-empty">No coin requests yet.</div>'}
+      </div>
+    </div>`;
+  }
+
+  if(tab==='history'){
+    const h=proHistory();
+    return `<div class="pro-head"><div class="pro-brand">History</div><div class="pro-room">${h.length} records</div></div>
+    <div class="pro-wrap"><div class="pro-card">
+      <div class="pro-title">Game history</div>
+      ${h.length?`<div class="pro-list">${h.slice().reverse().map(x=>`<div class="pro-item"><b>${esc(x.winnerName||x.winner||'Completed round')}</b><br><small>${esc(x.shapeName||x.shape||'Bingo')} • ${x.fee??''}</small></div>`).join('')}</div>`:'<div class="pro-empty">Game history will appear here.</div>'}
+    </div></div>`;
+  }
+
+  if(tab==='players'){
+    const ps=Object.values(S.players||{});
+    return `<div class="pro-head"><div class="pro-brand">Players</div><div class="pro-room">${ps.length} players</div></div>
+    <div class="pro-wrap"><div class="pro-card">
+      <div class="pro-title">Players in room</div>
+      ${ps.length?`<div class="pro-list">${ps.map(x=>`<div class="pro-item"><b>${esc(x.name||'Player')}</b><br><small>ID: ${esc(x.playerId||'—')} · <span style="color:${x.online===false?'#d52b2b':'#159447'}">${x.online===false?'Offline':'Online'}</span></small></div>`).join('')}</div>`:'<div class="pro-empty">No players yet.</div>'}
+    </div></div>`;
+  }
+
+  // Game tab: close panel and reveal the original, fully functional game UI.
+  return '';
+}
+function showProCoinForm(kind){
+  const box=$('proCoinForm');
+  if(!box)return;
+  const title=kind==='deposit'?'የCoin ገቢ ጥያቄ':'የCoin ወጪ ጥያቄ';
+  box.innerHTML=`<div class="panel" style="margin-top:12px"><b>${title}</b><div class="row" style="margin-top:9px;display:flex;gap:8px;align-items:center"><input id="proCoinAmount" type="number" min="1" step="1" inputmode="numeric" placeholder="Coin amount" style="flex:1"><button class="btn" data-pro-confirm="${kind}">አረጋግጥ</button><button class="btn ghost" data-pro-cancel-coin="1">ሰርዝ</button></div></div>`;
+  $('proCoinAmount')?.focus();
+}
+
+function showProTab(tab){
+  proTab=tab;
+  const panel=$('proPanel'), nav=$('proNav'), app=$('app');
+  document.querySelectorAll('.pro-nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.proTab===tab));
+  if(tab==='game'){
+    panel.classList.remove('show'); app.classList.remove('ui-game-hidden');
+  }else{
+    panel.innerHTML=proPanelHtml(tab); panel.classList.add('show'); app.classList.add('ui-game-hidden');
+  }
+}
+function updateProUI(){
+  const ready = S.screen==='lobbyPlayer' || S.screen==='lobbyCaller' || S.screen==='playerGame' || S.screen==='callerGame' || S.screen==='joinWaiting';
+  $('proNav')?.classList.toggle('show',ready);
+  if(ready && $('proPanel')?.classList.contains('show')) $('proPanel').innerHTML=proPanelHtml(proTab);
+  if(!ready){ $('proPanel')?.classList.remove('show'); $('app')?.classList.remove('ui-game-hidden'); }
+}
+function render(){
+  document.body.dataset.role = S.isCaller ? 'caller' : 'player';
+  const a = document.activeElement;
+  const keep = a && a.dataset && a.dataset.f ? { f: a.dataset.f, s: a.selectionStart } : null;
+  $('app').innerHTML = view();
+  updateProUI();
+  if (keep) {
+    const el = document.querySelector('[data-f="' + keep.f + '"]');
+    if (el) { try { el.focus(); if (keep.s != null) el.setSelectionRange(keep.s, keep.s); } catch (e) {} }
+  }
+}
+
+document.addEventListener('click', (e)=>{
+  const nav=e.target.closest('.pro-nav-btn');
+  if(nav){ showProTab(nav.dataset.proTab); return; }
+  const color=e.target.closest('[data-pro-color]');
+  if(color){
+    const c=color.dataset.proColor;
+    document.documentElement.style.setProperty('--pro-primary',c);
+    ls.set('bingo_ui_color',c);
+    if(proTab==='profile') showProTab('profile');
+    return;
+  }
+  if(e.target.closest('#proDark')){
+    document.body.classList.toggle('dark-ui');
+    ls.set('bingo_dark_ui',document.body.classList.contains('dark-ui')?'1':'0');
+    if(proTab==='profile') showProTab('profile');
+    return;
+  }
+  const coin=e.target.closest('[data-pro-coin]');
+  if(coin){ showProCoinForm(coin.dataset.proCoin); return; }
+  const cancelCoin=e.target.closest('[data-pro-cancel-coin]');
+  if(cancelCoin){ const box=$('proCoinForm'); if(box)box.innerHTML=''; return; }
+  const confirmCoin=e.target.closest('[data-pro-confirm]');
+  if(confirmCoin){
+    const input=$('proCoinAmount');
+    const n=Math.floor(Number(input?.value));
+    if(!Number.isFinite(n)||n<=0){ toast('Valid amount required'); return; }
+    const kind=confirmCoin.dataset.proConfirm;
+    requestCoin(kind,n).then(()=>{ const box=$('proCoinForm'); if(box)box.innerHTML=''; }).catch(()=>{});
+  }
+});
+window.addEventListener('online',()=>{ const x=$('proConnection'); if(x)x.textContent='Online'; });
+window.addEventListener('offline',()=>{ const x=$('proConnection'); if(x)x.textContent='Offline'; });
+if(ls.get('bingo_dark_ui')==='1') document.body.classList.add('dark-ui');
+if(ls.get('bingo_ui_color')) document.documentElement.style.setProperty('--pro-primary',ls.get('bingo_ui_color'));
+
+render();
+boot();
+setInterval(() => {
+  if (S.round && S.round.status === 'claim') {
+    document.querySelectorAll('.cdv').forEach((el) => { el.textContent = cdLeft(); });
+  }
+}, 250)
+  </script>
+</body>
+</html>

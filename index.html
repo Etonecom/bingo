@@ -216,7 +216,7 @@ body.dark-ui{--pro-bg:#0d1118;--pro-card:#151b24;--pro-text:#eef3fb;--pro-muted:
   
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect, query, orderByChild, equalTo, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCzg6CzEz9e4Q9icfdoegSZkJh-TQjqIgc",
@@ -730,7 +730,7 @@ async function openRound(){
   if (!S.room) return;
   S.busy = true; render();
   try {
-    await set(ref(db, `rooms/${S.room}/round`), { shape: S.roundForm.shape, fee: S.roundForm.fee, status: 'joining', openedAt: serverTimestamp() });
+    await set(ref(db, `rooms/${S.room}/round`), { shape: S.roundForm.shape, fee: S.roundForm.fee, status: 'joining', totalCollected: 0, callerFee: 0, prizePool: 0, openedAt: serverTimestamp() });
     await remove(ref(db, `rooms/${S.room}/cards`));
     await remove(ref(db, `rooms/${S.room}/claims`));
   } catch (err) { toast('ዙር መክፈት አልተቻለም፦ ' + (err.code || err.message)); }
@@ -752,7 +752,13 @@ async function refundJoiningCards(){
     try{
       await update(ref(db),{
         [`${base}/cards/${card}`]:null,
-        [`${base}/players/${uid}/balance`]:oldBalance+fee
+        [`${base}/players/${uid}/balance`]:oldBalance+fee,
+        [`${base}/coinTransactions/${opId}`]:{uid,amount:fee,type:'Income',status:'Approved',source:'Card refund',opId}
+      });
+      await runTransaction(ref(db,`${base}/round`), r => {
+        if(!r || r.status !== 'joining') return;
+        const total = Math.max(0,(+r.totalCollected||0)-fee);
+        return {...r,totalCollected:total,callerFee:total*0.10,prizePool:total*0.90};
       });
     }finally{
       await remove(ref(db,`${base}/gameOps/${uid}`)).catch(()=>{});

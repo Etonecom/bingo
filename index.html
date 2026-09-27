@@ -117,7 +117,7 @@ input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px
 .bingobtn{width:100%;min-height:60px;border:0;border-radius:12px;background:var(--red);color:#fff;font-weight:800;font-size:22px;margin-top:4px}
 .cdbox{display:flex;align-items:center;gap:10px}
 .cdnum{width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;font-weight:600;max-width:calc(100% - 28px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;text-align:center}
+.toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;font-weight:600;max-width:calc(100% - 28px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;text-align:center}
 .toast.show{opacity:1}
 
 .offline-name{color:#c5352b!important}.request{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.small{padding:8px 10px!important;font-size:13px!important}.request-list .panel{margin-top:8px}
@@ -480,51 +480,89 @@ async function cancelCoin(rid){
   } catch(e){ toast('ጥያቄውን መሰረዝ አልተቻለም።'); }
 }
 async function decideCoin(rid,approve){
- const q=S.coinRequests[rid]; if(!q||!S.room||q.status!=='pending'||!S.isCaller)return;
- try{
-  if(!approve){
-   await update(ref(db),{
-    [`rooms/${S.room}/coinRequests/${rid}/status`]:'rejected',
-    [`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-    [`rooms/${S.room}/coinTransactions/${rid}`]:{type:q.kind==='deposit'?'Income':'Expense',amount:+q.amount||0,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
-   });
-   toast('የኮይን ጥያቄው ውድቅ ተደርጓል።');
-   return;
+  const q=S.coinRequests[rid]; if(!q||!S.room||q.status!=='pending'||!S.isCaller)return;
+  const base=`rooms/${S.room}`;
+  try{
+    if(!approve){
+      await update(ref(db),{
+        [`${base}/coinRequests/${rid}/status`]:'rejected',
+        [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
+        [`${base}/coinTransactions/${rid}`]:{type:q.kind==='deposit'?'Income':'Expense',amount:+q.amount||0,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
+      });
+      toast('የኮይን ጥያቄው ውድቅ ተደርጓል።');
+      return;
+    }
+    const ps=await get(ref(db,`${base}/players/${q.uid}`));
+    if(!ps.exists()) return;
+    const p=ps.val(), old=+p.balance||0, amount=+q.amount||0;
+    if(q.kind==='withdraw'&&old<amount){
+      await update(ref(db),{
+        [`${base}/coinRequests/${rid}/status`]:'rejected',
+        [`${base}/coinRequests/${rid}/reason`]:'insufficient-balance',
+        [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
+        [`${base}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
+      });
+      toast('የተጫዋቹ ቀሪ ሒሳብ አነስተኛ ነው። ወጪ አልተፈጸመም።');
+      return;
+    }
+    const next=q.kind==='deposit'?old+amount:old-amount;
+    const type=q.kind==='deposit'?'Income':'Expense';
+
+    // Keep the approval guard alive while each protected write is evaluated.
+    // Do not create the transaction and remove the guard in the same multi-path update.
+    await set(ref(db,`${base}/coinApprovals/${q.uid}`),{requestId:rid,uid:q.uid,kind:q.kind,amount,oldBalance:old,newBalance:next,status:'ready'});
+    try{
+      // coinTransactions requires the request to still be pending.
+      await set(ref(db,`${base}/coinTransactions/${rid}`),{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'});
+      // player balance requires the approval guard to still be ready.
+      await update(ref(db),{
+        [`${base}/players/${q.uid}/balance`]:next,
+        [`${base}/coinRequests/${rid}/status`]:'approved',
+        [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp()
+      });
+    } finally {
+      await remove(ref(db,`${base}/coinApprovals/${q.uid}`)).catch(()=>{});
+    }
+    toast('የኮይን ጥያቄው ጸድቋል።');
+  }catch(e){
+    toast('የኮይን ጥያቄውን ማስፈጸም አልተቻለም።');
   }
-  const ps=await get(ref(db,`rooms/${S.room}/players/${q.uid}`)); if(!ps.exists())return;
-  const p=ps.val(),old=+p.balance||0,amount=+q.amount||0;
-  if(q.kind==='withdraw'&&old<amount){
-   await update(ref(db),{
-    [`rooms/${S.room}/coinRequests/${rid}/status`]:'rejected',
-    [`rooms/${S.room}/coinRequests/${rid}/reason`]:'insufficient-balance',
-    [`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-    [`rooms/${S.room}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
-   });
-   toast('የተጫዋቹ በቂ Coin የለውም። ጥያቄው ውድቅ ሆኗል።');
-   return;
-  }
-  const next=q.kind==='deposit'?old+amount:old-amount;
-  const type=q.kind==='deposit'?'Income':'Expense';
-  // First create a one-time approval guard tied to the exact old/new balance.
-  await set(ref(db,`rooms/${S.room}/coinApprovals/${q.uid}`),{requestId:rid,uid:q.uid,kind:q.kind,amount,oldBalance:old,newBalance:next,status:'ready'});
-  await update(ref(db),{
-   [`rooms/${S.room}/players/${q.uid}/balance`]:next,
-   [`rooms/${S.room}/coinRequests/${rid}/status`]:'approved',
-   [`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-   [`rooms/${S.room}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'},
-   [`rooms/${S.room}/coinApprovals/${q.uid}`]:null
-  });
-  toast('የኮይን ጥያቄው ጸድቋል።');
- }catch(e){toast('የኮይን ጥያቄውን ማስፈጸም አልተቻለም።');}
 }
 
 /* ---------- ክፍል መከታተል ---------- */
 let lastRoundStatus;
 let knownPendingCoinIds = new Set();
 let coinRequestNoticeReady = false;
+let lastRoundNote = null;
+let noticeQueue = [];
+let noticeShowing = false;
+function showNoticeQueue(){
+  if(noticeShowing || !noticeQueue.length) return;
+  noticeShowing = true;
+  const msg = noticeQueue.shift();
+  const t = $('toast');
+  if(!t){ noticeShowing=false; return; }
+  t.textContent = msg;
+  t.dataset.openCoins = msg === 'You have a request' ? '1' : '';
+  t.classList.add('show');
+  clearTimeout(showNoticeQueue._t);
+  showNoticeQueue._t = setTimeout(()=>{
+    t.classList.remove('show');
+    noticeShowing=false;
+    setTimeout(showNoticeQueue,220);
+  },3200);
+}
+function queueRoundNotices(note){
+  if(!note) return;
+  String(note).split(' · ').map(x=>x.trim()).filter(Boolean).forEach(x=>noticeQueue.push(x));
+  showNoticeQueue();
+}
 function subscribeRoom(code){
   unsubscribeAll();
   lastRoundStatus = undefined;
+  lastRoundNote = null;
+  noticeQueue = [];
+  noticeShowing = false;
   S.history = loadGameHistory(code);
   knownPendingCoinIds = new Set();
   coinRequestNoticeReady = false;
@@ -570,6 +608,11 @@ function subscribeRoom(code){
     }
     lastRoundStatus = newStatus;
     S.round = existed ? snap.val() : null;
+    const roundNote = S.round && S.round.note ? String(S.round.note) : null;
+    if(!S.isCaller && coinRequestNoticeReady && roundNote && roundNote !== lastRoundNote){
+      queueRoundNotices(roundNote);
+    }
+    lastRoundNote = roundNote;
     recordGameHistory(S.round);
     render();
   }));
@@ -690,18 +733,43 @@ async function openRound(){
   } catch (err) { toast('ዙር መክፈት አልተቻለም፦ ' + (err.code || err.message)); }
   S.busy = false; render();
 }
+async function refundJoiningCards(){
+  if(!S.room) return;
+  const cards = Object.entries(S.cards || {}).filter(([,uid])=>uid);
+  for(const [card,uid] of cards){
+    const ps = await get(ref(db,`rooms/${S.room}/players/${uid}`));
+    if(!ps.exists()) continue;
+    const p = ps.val();
+    const oldBalance = +p.balance || 0;
+    const fee = +(S.round?.fee || 0);
+    if(fee <= 0) continue;
+    const opId = requestId() + '_refund';
+    const base = `rooms/${S.room}`;
+    await set(ref(db,`${base}/gameOps/${uid}`),{action:'refund',card:String(card),fee,oldBalance,newBalance:oldBalance+fee,status:'ready',opId});
+    try{
+      await update(ref(db),{
+        [`${base}/cards/${card}`]:null,
+        [`${base}/players/${uid}/balance`]:oldBalance+fee
+      });
+    }finally{
+      await remove(ref(db,`${base}/gameOps/${uid}`)).catch(()=>{});
+    }
+  }
+}
 async function resetRound(){
   if (!S.room) return;
-  if (!confirm('ይህን ዙር ልሰርዘው? የተያዙ ካርዶች ይለቀቃሉ።')) return;
+  if (!confirm('ይህን ዙር ልሰርዘው? የተያዙ ካርዶች ይለቀቃሉ እና የካርድ ክፍያው ይመለሳል።')) return;
   stopCallerTimers();
   S.busy = true; render();
   try {
+    if(S.round && S.round.status === 'joining') await refundJoiningCards();
     await remove(ref(db, `rooms/${S.room}/round`));
     await remove(ref(db, `rooms/${S.room}/cards`));
     await remove(ref(db, `rooms/${S.room}/claims`));
   } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
   S.busy = false; render();
 }
+
 async function stopRound(){
   if (!S.room || !S.round) return;
   if (!confirm('ይህን ዙር አሁን ላቁመው?')) return;
@@ -719,22 +787,30 @@ async function pickCard(no){
   const me = S.players[S.uid] || {};
   const balance = +me.balance || 0;
   const fee = +S.round.fee || 0;
+  const base = `rooms/${S.room}`;
+  const opId = requestId();
   try {
     if (owner === S.uid) {
-      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{action:'refund',card:String(no),fee,oldBalance:balance,newBalance:balance+fee,status:'ready'});
-      await update(ref(db), {
-        [`rooms/${S.room}/cards/${no}`]: null,
-        [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee,
-        [`rooms/${S.room}/gameOps/${S.uid}`]: null
-      });
+      await set(ref(db,`${base}/gameOps/${S.uid}`),{action:'refund',card:String(no),fee,oldBalance:balance,newBalance:balance+fee,status:'ready',opId});
+      try {
+        await update(ref(db), {
+          [`${base}/cards/${no}`]: null,
+          [`${base}/players/${S.uid}/balance`]: balance + fee
+        });
+      } finally {
+        await remove(ref(db,`${base}/gameOps/${S.uid}`)).catch(()=>{});
+      }
     } else if (!owner) {
       if (balance < fee) { toast('ያለህ ኮይን በቂ አይደለም። ያለህ፦ ' + balance + '፣ የሚያስፈልገው፦ ' + fee + '።'); return; }
-      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{action:'buy',card:String(no),fee,oldBalance:balance,newBalance:balance-fee,status:'ready'});
-      await update(ref(db), {
-        [`rooms/${S.room}/cards/${no}`]: S.uid,
-        [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee,
-        [`rooms/${S.room}/gameOps/${S.uid}`]: null
-      });
+      await set(ref(db,`${base}/gameOps/${S.uid}`),{action:'buy',card:String(no),fee,oldBalance:balance,newBalance:balance-fee,status:'ready',opId});
+      try {
+        await update(ref(db), {
+          [`${base}/cards/${no}`]: S.uid,
+          [`${base}/players/${S.uid}/balance`]: balance - fee
+        });
+      } finally {
+        await remove(ref(db,`${base}/gameOps/${S.uid}`)).catch(()=>{});
+      }
     }
   } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
 }
@@ -930,7 +1006,7 @@ function cardBoxHTML(no){
 }
 function playerName(uid){ return (S.players[uid] && S.players[uid].name) || 'ተጫዋች'; }
 function noteHTML(){
-  if (!S.round || !S.round.note) return '';
+  if (!S.isCaller || !S.round || !S.round.note) return '';
   return '<div class="panel warn" style="margin-top:10px"><p>' + esc(S.round.note) + '</p></div>';
 }
 function resultHTML(result){
@@ -1297,6 +1373,10 @@ document.addEventListener('click', (e)=>{
       showProTab('coins');
     }).catch(()=>{});
   }
+});
+document.addEventListener('click',(e)=>{
+  const t=e.target.closest('#toast');
+  if(t && t.dataset.openCoins==='1' && S.isCaller){ t.classList.remove('show'); t.dataset.openCoins=''; showProTab('coins'); }
 });
 window.addEventListener('online',()=>{ const x=$('proConnection'); if(x)x.textContent='Online'; });
 window.addEventListener('offline',()=>{ const x=$('proConnection'); if(x)x.textContent='Offline'; });

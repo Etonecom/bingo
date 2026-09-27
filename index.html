@@ -193,7 +193,7 @@ body.dark-ui{--pro-bg:#0d1118;--pro-card:#151b24;--pro-text:#eef3fb;--pro-muted:
   
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCzg6CzEz9e4Q9icfdoegSZkJh-TQjqIgc",
@@ -458,20 +458,8 @@ async function decideCoin(rid,approve){
    [`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
    [`rooms/${S.room}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid}
   });
-  cacheBalance(S.room,q.playerId, next);
   toast('የኮይን ጥያቄው ጸድቋል።');
  }catch(e){toast('የኮይን ጥያቄውን ማስፈጸም አልተቻለም።');}
-}
-async function cancelCoinRequest(rid){
- const q=S.coinRequests[rid];
- if(!q||!S.room||q.uid!==S.uid||q.status!=='pending')return;
- try{
-  await update(ref(db),{
-   [`rooms/${S.room}/coinRequests/${rid}/status`]:'cancelled',
-   [`rooms/${S.room}/coinRequests/${rid}/cancelledAt`]:serverTimestamp()
-  });
-  toast('የኮይን ጥያቄው ተሰርዟል።');
- }catch(e){toast('የኮይን ጥያቄውን መሰረዝ አልተቻለም።');}
 }
 
 /* ---------- ክፍል መከታተል ---------- */
@@ -490,7 +478,7 @@ function subscribeRoom(code){
     if(me && me.playerId && me.balance!=null){S.currentPlayerId=me.playerId;cacheBalance(code,me.playerId,+me.balance);}
     render();
   }));
-  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/joinRequests`) : query(ref(db, `rooms/${code}/joinRequests`), orderByChild('newUid'), equalTo(S.uid)), snap=>{
+  unsubs.push(onValue(ref(db, `rooms/${code}/joinRequests`), snap=>{
     S.joinRequests=snap.val()||{};
     const pending=S.pendingJoin?S.joinRequests[S.pendingJoin]:null;
     if(!S.isCaller && pending?.status==='approved'){
@@ -500,8 +488,8 @@ function subscribeRoom(code){
     }
     render();
   }));
-  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/coinRequests`) : query(ref(db, `rooms/${code}/coinRequests`), orderByChild('uid'), equalTo(S.uid)), snap=>{S.coinRequests=snap.val()||{};render();}));
-  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/coinTransactions`) : query(ref(db, `rooms/${code}/coinTransactions`), orderByChild('uid'), equalTo(S.uid)), snap=>{S.coinTransactions=snap.val()||{};render();}));
+  unsubs.push(onValue(ref(db, `rooms/${code}/coinRequests`), snap=>{S.coinRequests=snap.val()||{};render();}));
+  unsubs.push(onValue(ref(db, `rooms/${code}/coinTransactions`), snap=>{S.coinTransactions=snap.val()||{};render();}));
   unsubs.push(onValue(ref(db, `rooms/${code}/round`), (snap) => {
     const existed = snap.exists();
     const newStatus = existed ? snap.val().status : null;
@@ -600,12 +588,8 @@ async function closeRoom(){
    const meta=await get(ref(db,`rooms/${code}/meta`));if(!meta.exists())throw{code:'no-room'};
    const snap=await get(ref(db,`rooms/${code}/players`)),players=snap.val()||{}; const existing=Object.keys(players).map(uid=>({uid,p:players[uid]})).find(x=>x.p&&x.p.playerId===pid);
    if(existing&&existing.uid!==S.uid){await requestIdentityTransfer(existing,name,pid,code);S.busy=false;return;}
-   const cached=cachedBalance(code,pid);
-   if(existing && existing.uid===S.uid){
-    await update(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:existing.p?.joinedAt||serverTimestamp(),online:true,lastSeen:serverTimestamp()});
-   }else{
-    await set(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:serverTimestamp(),balance:cached==null?0:cached,online:true,lastSeen:serverTimestamp()});
-   }
+   const oldBalance=cachedBalance(code,pid),balance=existing?(+existing.p.balance||0):(oldBalance==null?0:oldBalance);
+   await set(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:existing?.p?.joinedAt||serverTimestamp(),balance,online:true,lastSeen:serverTimestamp()});
    ls.set('bingo_name',name);ls.set('bingo_player_id',pid);ls.set('bingo_room',code);S.room=code;S.currentPlayerId=pid;subscribeRoom(code);setupPresence(code);S.screen='lobbyPlayer';
   }catch(err){S.err=err.code==='no-room'?'ይህ ክፍል አልተገኘም። ኮዱን አጫዋቹን ጠይቅ።':'መግባት አልተቻለም፦ '+(err.code||err.message);} S.busy=false;render();
 }
@@ -660,16 +644,10 @@ async function pickCard(no){
   const fee = S.round.fee;
   try {
     if (owner === S.uid) {
-      const opId=requestId();
-      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{opId,action:'refund',card:String(no),fee,oldBalance:balance,newBalance:balance+fee,status:'ready'});
-      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: null, [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee, [`rooms/${S.room}/coinTransactions/${opId}`]: {type:'Income',amount:fee,status:'Approved',uid:S.uid,source:'Card refund',card:no,opId} });
-      await remove(ref(db,`rooms/${S.room}/gameOps/${S.uid}`));
+      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: null, [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee, [`rooms/${S.room}/coinTransactions/${requestId()}`]: {type:'Income',amount:fee,status:'Approved',uid:S.uid,source:'Card refund'} });
     } else if (!owner) {
       if (balance < fee) { toast('በቂ ኮይን የለህም (ያለህ ' + balance + '፣ ያስፈልጋል ' + fee + ')። አጫዋቹን ኮይን እንዲልክልህ ጠይቅ።'); return; }
-      const opId=requestId();
-      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{opId,action:'buy',card:String(no),fee,oldBalance:balance,newBalance:balance-fee,status:'ready'});
-      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: S.uid, [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee, [`rooms/${S.room}/coinTransactions/${opId}`]: {type:'Expense',amount:fee,status:'Approved',uid:S.uid,source:'Card fee',card:no,opId} });
-      await remove(ref(db,`rooms/${S.room}/gameOps/${S.uid}`));
+      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: S.uid, [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee, [`rooms/${S.room}/coinTransactions/${requestId()}`]: {type:'Expense',amount:fee,status:'Approved',uid:S.uid,source:'Card fee'} });
     }
   } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
 }
@@ -788,7 +766,6 @@ function act(a, d){
   else if (a === 'rejectjoin') { approveJoin(d.id,false); return; }
   else if (a === 'approvecoin') { decideCoin(d.id,true); return; }
   else if (a === 'rejectcoin') { decideCoin(d.id,false); return; }
-  else if (a === 'cancelcoin') { cancelCoinRequest(d.id); return; }
   else if (a === 'redeem') { redeemCode(); return; }
   else if (a === 'openroom') { openRoom(); return; }
   else if (a === 'closeroom') { closeRoom(); return; }
@@ -1099,7 +1076,7 @@ function proPanelHtml(tab){
         <div class="pro-row"><span class="pro-muted">Balance</span><b>${balance}</b></div>
       </div>
       <div class="pro-card"><div class="pro-title">Coin Transactions</div>
-        ${(allTx.length||allReq.length)?`<div class="pro-list">${allReq.slice().reverse().map(q=>`<div class="pro-item"><b>${q.kind==='deposit'?'Income':'Expense'} • ${q.amount||0} coins</b><br><small>${esc(q.status||'pending')}</small>${q.status==='pending'?`<div style="margin-top:8px"><button class="btn danger small" data-a="cancelcoin" data-id="${esc(q.requestId)}">Cancel</button></div>`:''}</div>`).join('')}${allTx.slice().reverse().map(x=>`<div class="pro-item"><b>${esc(x.type||'Transaction')} • ${x.amount||0} coins</b><br><small>${esc(x.status||'Pending')}</small></div>`).join('')}</div>`:'<div class="pro-empty">No coin transactions yet.</div>'}
+        ${(allTx.length||allReq.filter(q=>q.status==='pending').length)?`<div class="pro-list">${allReq.filter(q=>q.status==='pending').map(q=>`<div class="pro-item"><b>${q.kind==='deposit'?'Income':'Expense'} • ${q.amount||0} coins</b><br><small>Pending</small></div>`).join('')}${allTx.slice().reverse().map(x=>`<div class="pro-item"><b>${esc(x.type||'Transaction')} • ${x.amount||0} coins</b><br><small>${esc(x.status||'Pending')}</small></div>`).join('')}</div>`:'<div class="pro-empty">No coin transactions yet.</div>'}
       </div>
     </div>`;
   }
@@ -1195,7 +1172,7 @@ document.addEventListener('click', (e)=>{
   if(confirmCoin){
     const input=$('proCoinAmount');
     const n=Math.floor(Number(input?.value));
-    if(!Number.isFinite(n)||n<=0){ toast('የኮይኑን ትክክለኛ መጠን ያስገቡ።'); return; }
+    if(!Number.isFinite(n)||n<=0){ toast('Valid amount required'); return; }
     const kind=confirmCoin.dataset.proConfirm;
     requestCoin(kind,n).then(()=>{
       const box=$('proCoinForm');
@@ -1218,4 +1195,4 @@ setInterval(() => {
 }, 250)
   </script>
 </body>
-</html>
+</html> 

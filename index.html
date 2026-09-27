@@ -151,6 +151,29 @@ body.dark-ui{--pro-bg:#0d1118;--pro-card:#151b24;--pro-text:#eef3fb;--pro-muted:
 .pro-colors{display:flex;gap:9px;flex-wrap:wrap}.pro-color{width:30px;height:30px;border-radius:50%;border:3px solid var(--pro-card);box-shadow:0 0 0 1px #cbd3df;cursor:pointer}.pro-color.sel{box-shadow:0 0 0 2px var(--pro-primary)}
 .pro-switch{width:48px;height:28px;border-radius:20px;background:#d9dfeb;padding:3px;cursor:pointer}.pro-switch i{display:block;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}.pro-switch.on{background:var(--pro-primary)}.pro-switch.on i{transform:translateX(20px)}
 @media(max-width:420px){#proPanel{padding-left:10px;padding-right:10px}}
+.dark-ui .pro-btn{background:#273141;color:#eef3fb}
+.dark-ui .pro-btn.primary{background:#1769ff;color:#fff}
+.coin-tx{border-left:5px solid var(--pro-line);padding-left:12px}
+.coin-tx.income{border-left-color:#16a34a}
+.coin-tx.expense{border-left-color:#f97316}
+.coin-tx.rejected,.coin-tx.cancelled{border-left-color:#dc2626}
+.coin-tx .tx-amount{font-size:20px;font-weight:950}
+.coin-tx.income .tx-amount{color:#16a34a}
+.coin-tx.expense .tx-amount{color:#f97316}
+.coin-tx.rejected .tx-amount,.coin-tx.cancelled .tx-amount{color:#dc2626}
+.tx-status{display:inline-block;margin-top:4px;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:900}
+.tx-status.pending{background:#fff3cd;color:#946200}
+.tx-status.approved{background:#dcfce7;color:#166534}
+.tx-status.rejected,.tx-status.cancelled{background:#fee2e2;color:#991b1b}
+.dark-ui .tx-status.pending{background:#3d3214;color:#f5c45d}
+.dark-ui .tx-status.approved{background:#173923;color:#76e3a2}
+.dark-ui .tx-status.rejected,.dark-ui .tx-status.cancelled{background:#431f1d;color:#ff8d83}
+.coin-pending-badge{display:inline-block;background:#f59e0b;color:#fff;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:900}
+.coin-request-actions{display:flex;gap:12px;margin-top:12px}
+.coin-request-actions .btn{flex:1;min-width:0}
+#proNav .pro-nav-btn[data-pro-tab="game"]{font-size:11px;font-weight:950}
+#proNav .pro-nav-btn[data-pro-tab="game"] b{font-size:23px}
+#proNav .pro-nav-btn[data-pro-tab="game"].active{box-shadow:0 0 0 1px rgba(23,105,255,.12);font-weight:950}
 
 /* Coin request form: full-width amount field and side-by-side actions */
 .coin-request-box{margin-top:12px;padding:18px;border:1px solid #dfe5ee;border-radius:16px;background:#fff;box-sizing:border-box}
@@ -193,7 +216,7 @@ body.dark-ui{--pro-bg:#0d1118;--pro-card:#151b24;--pro-text:#eef3fb;--pro-muted:
   
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCzg6CzEz9e4Q9icfdoegSZkJh-TQjqIgc",
@@ -314,7 +337,7 @@ function toast(msg){
 const S = {
   screen: 'loading',      // loading | role | player | callerCode | callerHome | lobbyCaller | lobbyPlayer | fatal
   uid: null, isCaller: false,
-  room: null, meta: null, players: {}, round: null, cards: {}, claims: {}, joinRequests: {}, coinRequests: {}, coinTransactions: {}, currentPlayerId: null, pendingJoin: null,
+  room: null, meta: null, players: {}, round: null, cards: {}, claims: {}, joinRequests: {}, coinRequests: {}, coinTransactions: {}, history: [], currentPlayerId: null, pendingJoin: null,
   marks: {}, chooser: false,
   roundForm: { shape: 'line', fee: 100 },
   form: { name: ls.get('bingo_name') || '', playerId: ls.get('bingo_player_id') || '', room: '', code: '' },
@@ -385,6 +408,25 @@ function myPlayer(){ return S.players[S.uid] || null; }
 function cacheKey(room,pid){ return 'bingo_balance_'+room+'_'+pid; }
 function cacheBalance(room,pid,bal){ if(room&&pid&&Number.isFinite(+bal)) ls.set(cacheKey(room,pid),String(+bal)); }
 function cachedBalance(room,pid){ const v=ls.get(cacheKey(room,pid)); return v==null?null:(+v||0); }
+function historyKey(room){ return 'bingo_game_history_'+String(room||''); }
+function loadGameHistory(room){
+  try {
+    const raw=ls.get(historyKey(room));
+    const h=raw?JSON.parse(raw):[];
+    return Array.isArray(h)?h:[];
+  } catch(e){ return []; }
+}
+function saveGameHistory(room,h){ try { ls.set(historyKey(room),JSON.stringify(h.slice(-100))); } catch(e) {} }
+function recordGameHistory(round){
+  if(!S.room || !round || round.status!=='done' || !round.result) return;
+  const id=String(round.openedAt||round.startedAt||'');
+  if(!id) return;
+  if(S.history.some(x=>x && x.id===id)) return;
+  const winners=Array.isArray(round.result.winners)?round.result.winners.map(w=>({card:w.card,uid:w.uid,name:playerName(w.uid)})):[];
+  const entry={id,shape:round.shape,shapeName:shapeOf(round.shape).name,fee:+round.fee||0,noWinner:!!round.result.noWinner,reason:round.result.reason||'',winners};
+  S.history=[...S.history,entry].slice(-100);
+  saveGameHistory(S.room,S.history);
+}
 function requestId(){ return S.uid+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); }
 let presenceUnsub = null;
 function setupPresence(code){
@@ -426,6 +468,17 @@ async function requestCoin(kind, suppliedAmount){
   toast(kind==='deposit'?'የኮይን ገቢ ጥያቄህ ተልኳል።':'የኮይን ወጪ ጥያቄህ ተልኳል።');
  }catch(e){toast('የኮይን ጥያቄውን መላክ አልተቻለም።');}
 }
+async function cancelCoin(rid){
+  const q=S.coinRequests[rid];
+  if(!q || q.uid!==S.uid || q.status!=='pending' || !S.room) return;
+  try {
+    await update(ref(db),{
+      [`rooms/${S.room}/coinRequests/${rid}/status`]:'cancelled',
+      [`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp()
+    });
+    toast('የኮይን ጥያቄው ተሰርዟል።');
+  } catch(e){ toast('ጥያቄውን መሰረዝ አልተቻለም።'); }
+}
 async function decideCoin(rid,approve){
  const q=S.coinRequests[rid]; if(!q||!S.room||q.status!=='pending'||!S.isCaller)return;
  try{
@@ -433,7 +486,7 @@ async function decideCoin(rid,approve){
    await update(ref(db),{
     [`rooms/${S.room}/coinRequests/${rid}/status`]:'rejected',
     [`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-    [`rooms/${S.room}/coinTransactions/${rid}`]:{type:q.kind==='deposit'?'Income':'Expense',amount:+q.amount||0,status:'Rejected',requestId:rid,uid:q.uid}
+    [`rooms/${S.room}/coinTransactions/${rid}`]:{type:q.kind==='deposit'?'Income':'Expense',amount:+q.amount||0,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
    });
    toast('የኮይን ጥያቄው ውድቅ ተደርጓል።');
    return;
@@ -445,18 +498,21 @@ async function decideCoin(rid,approve){
     [`rooms/${S.room}/coinRequests/${rid}/status`]:'rejected',
     [`rooms/${S.room}/coinRequests/${rid}/reason`]:'insufficient-balance',
     [`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-    [`rooms/${S.room}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid}
+    [`rooms/${S.room}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
    });
    toast('የተጫዋቹ በቂ Coin የለውም። ጥያቄው ውድቅ ሆኗል።');
    return;
   }
   const next=q.kind==='deposit'?old+amount:old-amount;
   const type=q.kind==='deposit'?'Income':'Expense';
+  // First create a one-time approval guard tied to the exact old/new balance.
+  await set(ref(db,`rooms/${S.room}/coinApprovals/${q.uid}`),{requestId:rid,uid:q.uid,kind:q.kind,amount,oldBalance:old,newBalance:next,status:'ready'});
   await update(ref(db),{
    [`rooms/${S.room}/players/${q.uid}/balance`]:next,
    [`rooms/${S.room}/coinRequests/${rid}/status`]:'approved',
    [`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-   [`rooms/${S.room}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid}
+   [`rooms/${S.room}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'},
+   [`rooms/${S.room}/coinApprovals/${q.uid}`]:null
   });
   toast('የኮይን ጥያቄው ጸድቋል።');
  }catch(e){toast('የኮይን ጥያቄውን ማስፈጸም አልተቻለም።');}
@@ -464,9 +520,14 @@ async function decideCoin(rid,approve){
 
 /* ---------- ክፍል መከታተል ---------- */
 let lastRoundStatus;
+let knownPendingCoinIds = new Set();
+let coinRequestNoticeReady = false;
 function subscribeRoom(code){
   unsubscribeAll();
   lastRoundStatus = undefined;
+  S.history = loadGameHistory(code);
+  knownPendingCoinIds = new Set();
+  coinRequestNoticeReady = false;
   unsubs.push(onValue(ref(db, `rooms/${code}/meta`), (snap) => {
     if (!snap.exists()) { roomGone(); return; }
     S.meta = snap.val();
@@ -478,7 +539,7 @@ function subscribeRoom(code){
     if(me && me.playerId && me.balance!=null){S.currentPlayerId=me.playerId;cacheBalance(code,me.playerId,+me.balance);}
     render();
   }));
-  unsubs.push(onValue(ref(db, `rooms/${code}/joinRequests`), snap=>{
+  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/joinRequests`) : query(ref(db, `rooms/${code}/joinRequests`), orderByChild('newUid'), equalTo(S.uid)), snap=>{
     S.joinRequests=snap.val()||{};
     const pending=S.pendingJoin?S.joinRequests[S.pendingJoin]:null;
     if(!S.isCaller && pending?.status==='approved'){
@@ -488,8 +549,19 @@ function subscribeRoom(code){
     }
     render();
   }));
-  unsubs.push(onValue(ref(db, `rooms/${code}/coinRequests`), snap=>{S.coinRequests=snap.val()||{};render();}));
-  unsubs.push(onValue(ref(db, `rooms/${code}/coinTransactions`), snap=>{S.coinTransactions=snap.val()||{};render();}));
+  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/coinRequests`) : query(ref(db, `rooms/${code}/coinRequests`), orderByChild('uid'), equalTo(S.uid)), snap=>{
+    S.coinRequests=snap.val()||{};
+    if(S.isCaller){
+      const pendingIds=new Set(Object.values(S.coinRequests).filter(q=>q&&q.status==='pending'&&q.requestId).map(q=>q.requestId));
+      if(coinRequestNoticeReady){
+        for(const id of pendingIds){ if(!knownPendingCoinIds.has(id)){ toast('You have a request'); break; } }
+      }
+      knownPendingCoinIds=pendingIds;
+      coinRequestNoticeReady=true;
+    }
+    render();
+  }));
+  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/coinTransactions`) : query(ref(db, `rooms/${code}/coinTransactions`), orderByChild('uid'), equalTo(S.uid)), snap=>{S.coinTransactions=snap.val()||{};render();}));
   unsubs.push(onValue(ref(db, `rooms/${code}/round`), (snap) => {
     const existed = snap.exists();
     const newStatus = existed ? snap.val().status : null;
@@ -498,6 +570,7 @@ function subscribeRoom(code){
     }
     lastRoundStatus = newStatus;
     S.round = existed ? snap.val() : null;
+    recordGameHistory(S.round);
     render();
   }));
   unsubs.push(onValue(ref(db, `rooms/${code}/cards`), (snap) => {
@@ -521,7 +594,7 @@ function roomGone(){
 function leaveLocal(){
   unsubscribeAll();
   ls.del('bingo_room');
-  S.room = null; S.meta = null; S.players = {}; S.round = null; S.cards = {}; S.claims = {}; S.marks = {}; S.chooser = false;
+  S.room = null; S.meta = null; S.players = {}; S.round = null; S.history = []; S.cards = {}; S.claims = {}; S.marks = {}; S.chooser = false;
   lastRoundStatus = undefined;
   stopCallerTimers();
 }
@@ -588,8 +661,12 @@ async function closeRoom(){
    const meta=await get(ref(db,`rooms/${code}/meta`));if(!meta.exists())throw{code:'no-room'};
    const snap=await get(ref(db,`rooms/${code}/players`)),players=snap.val()||{}; const existing=Object.keys(players).map(uid=>({uid,p:players[uid]})).find(x=>x.p&&x.p.playerId===pid);
    if(existing&&existing.uid!==S.uid){await requestIdentityTransfer(existing,name,pid,code);S.busy=false;return;}
-   const oldBalance=cachedBalance(code,pid),balance=existing?(+existing.p.balance||0):(oldBalance==null?0:oldBalance);
-   await set(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:existing?.p?.joinedAt||serverTimestamp(),balance,online:true,lastSeen:serverTimestamp()});
+   const cached=cachedBalance(code,pid);
+   if(existing && existing.uid===S.uid){
+    await update(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:existing.p?.joinedAt||serverTimestamp(),online:true,lastSeen:serverTimestamp()});
+   }else{
+    await set(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:serverTimestamp(),balance:cached==null?0:cached,online:true,lastSeen:serverTimestamp()});
+   }
    ls.set('bingo_name',name);ls.set('bingo_player_id',pid);ls.set('bingo_room',code);S.room=code;S.currentPlayerId=pid;subscribeRoom(code);setupPresence(code);S.screen='lobbyPlayer';
   }catch(err){S.err=err.code==='no-room'?'ይህ ክፍል አልተገኘም። ኮዱን አጫዋቹን ጠይቅ።':'መግባት አልተቻለም፦ '+(err.code||err.message);} S.busy=false;render();
 }
@@ -640,17 +717,28 @@ async function pickCard(no){
   if (!S.room || !S.round || S.round.status !== 'joining') return;
   const owner = S.cards[no];
   const me = S.players[S.uid] || {};
-  const balance = me.balance || 0;
-  const fee = S.round.fee;
+  const balance = +me.balance || 0;
+  const fee = +S.round.fee || 0;
   try {
     if (owner === S.uid) {
-      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: null, [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee, [`rooms/${S.room}/coinTransactions/${requestId()}`]: {type:'Income',amount:fee,status:'Approved',uid:S.uid,source:'Card refund'} });
+      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{action:'refund',card:String(no),fee,oldBalance:balance,newBalance:balance+fee,status:'ready'});
+      await update(ref(db), {
+        [`rooms/${S.room}/cards/${no}`]: null,
+        [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee,
+        [`rooms/${S.room}/gameOps/${S.uid}`]: null
+      });
     } else if (!owner) {
-      if (balance < fee) { toast('በቂ ኮይን የለህም (ያለህ ' + balance + '፣ ያስፈልጋል ' + fee + ')። አጫዋቹን ኮይን እንዲልክልህ ጠይቅ።'); return; }
-      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: S.uid, [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee, [`rooms/${S.room}/coinTransactions/${requestId()}`]: {type:'Expense',amount:fee,status:'Approved',uid:S.uid,source:'Card fee'} });
+      if (balance < fee) { toast('ያለህ ኮይን በቂ አይደለም። ያለህ፦ ' + balance + '፣ የሚያስፈልገው፦ ' + fee + '።'); return; }
+      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{action:'buy',card:String(no),fee,oldBalance:balance,newBalance:balance-fee,status:'ready'});
+      await update(ref(db), {
+        [`rooms/${S.room}/cards/${no}`]: S.uid,
+        [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee,
+        [`rooms/${S.room}/gameOps/${S.uid}`]: null
+      });
     }
   } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
 }
+
 
 /* ---------- የካውንተር ጨዋታ ሞተር (አጫዋቹ ብቻ) ---------- */
 let drawTimer = null, resolveTimer = null, endTimer = null;
@@ -766,6 +854,7 @@ function act(a, d){
   else if (a === 'rejectjoin') { approveJoin(d.id,false); return; }
   else if (a === 'approvecoin') { decideCoin(d.id,true); return; }
   else if (a === 'rejectcoin') { decideCoin(d.id,false); return; }
+  else if (a === 'cancelcoin') { cancelCoin(d.id); return; }
   else if (a === 'redeem') { redeemCode(); return; }
   else if (a === 'openroom') { openRoom(); return; }
   else if (a === 'closeroom') { closeRoom(); return; }
@@ -1009,7 +1098,7 @@ function proCoins(p){
   return Number(p.balance ?? p.coins ?? p.coin ?? 0) || 0;
 }
 function proHistory(){
-  const h = S.history || S.gameHistory || [];
+  const h = S.history || [];
   return Array.isArray(h) ? h : Object.values(h || {});
 }
 function proRequests(){
@@ -1051,18 +1140,38 @@ function proPanelHtml(tab){
     const income=allTx.filter(x=>x.type==='Income'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const expense=allTx.filter(x=>x.type==='Expense'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const pending=allReq.some(q=>q.status==='pending');
+    const txClass=(x)=>x.status==='Approved'?(x.type==='Income'?'income':'expense'):x.status==='Cancelled'?'cancelled':'rejected';
+    const txAmount=(x)=>x.type==='Income'?'+$'+(+x.amount||0):'-$'+(+x.amount||0);
+    const txStatus=(x)=>String(x.status||'Pending').toLowerCase();
     if(S.isCaller){
       const pendingReq=Object.values(S.coinRequests||{}).filter(q=>q&&q.status==='pending');
+      const reqHistory=Object.values(S.coinRequests||{}).filter(q=>q&&q.status!=='pending');
+      const txItems=[...allTx.map(x=>({kind:'tx',x})),...reqHistory.filter(q=>q.status==='cancelled').map(q=>({kind:'cancel',q}))].sort((a,b)=>{
+        const at=a.x?.decidedAt||a.x?.at||a.q?.decidedAt||a.q?.at||0;
+        const bt=b.x?.decidedAt||b.x?.at||b.q?.decidedAt||b.q?.at||0;
+        return (typeof bt==='number'?bt:0)-(typeof at==='number'?at:0);
+      });
       return `<div class="pro-head"><div class="pro-brand">Coin Requests</div><div class="pro-room">${pendingReq.length} pending</div></div>
       <div class="pro-wrap">
         <div class="pro-card"><div class="pro-title">Player requests</div>
-          ${pendingReq.length?`<div class="pro-list">${pendingReq.slice().reverse().map(q=>`<div class="pro-item"><b>${esc(q.name||'Player')}</b><br><small>ID: ${esc(q.playerId||'—')} • ${q.kind==='deposit'?'Income request':'Expense request'} • ${q.amount||0} coins</small><div class="row" style="margin-top:9px"><button class="btn small" data-a="approvecoin" data-id="${esc(q.requestId)}">ፍቀድ</button><button class="btn danger small" data-a="rejectcoin" data-id="${esc(q.requestId)}">ውድቅ</button></div></div>`).join('')}</div>`:'<div class="pro-empty">Pending coin requests የሉም።</div>'}
+          ${pendingReq.length?`<div class="pro-list">${pendingReq.slice().reverse().map(q=>`<div class="pro-item"><span class="coin-pending-badge">PENDING</span><div style="margin-top:7px"><b>${esc(q.name||'Player')}</b><br><small>ID: ${esc(q.playerId||'—')} • ${q.kind==='deposit'?'Income request':'Expense request'} • $${q.amount||0}</small></div><div class="coin-request-actions"><button class="btn small" data-a="approvecoin" data-id="${esc(q.requestId)}">ፍቀድ</button><button class="btn danger small" data-a="rejectcoin" data-id="${esc(q.requestId)}">ውድቅ</button></div></div>`).join('')}</div>`:'<div class="pro-empty">Pending coin requests የሉም።</div>'}
+        </div>
+        <div class="pro-card"><div class="pro-title">Coin Transactions</div>
+          ${txItems.length?`<div class="pro-list">${txItems.map(item=>{
+            if(item.kind==='cancel'){const q=item.q;return `<div class="pro-item coin-tx cancelled"><div><b>${q.kind==='deposit'?'Income':'Expense'}</b> <span class="tx-amount">${q.kind==='deposit'?'+$':'-$'}${q.amount||0}</span></div><span class="tx-status cancelled">Cancelled</span><br><small>Player: ${esc(q.name||'Player')}</small></div>`;}
+            const x=item.x; return `<div class="pro-item coin-tx ${txClass(x)}"><div><b>${esc(x.type||'Transaction')}</b> <span class="tx-amount">${txAmount(x)}</span></div><span class="tx-status ${txStatus(x)}">${esc(x.status||'Pending')}</span><br><small>Player: ${esc(x.playerName||'Player')}</small></div>`;
+          }).join('')}</div>`:'<div class="pro-empty">No coin transactions yet.</div>'}
         </div>
       </div>`;
     }
-    return `<div class="pro-head"><div class="pro-brand">Coins</div><div class="pro-room">${balance} coins</div></div>
+    const merged=[];
+    allReq.filter(q=>q.status==='pending').forEach(q=>merged.push({kind:'request',q}));
+    allReq.filter(q=>q.status==='cancelled').forEach(q=>merged.push({kind:'cancel',q}));
+    allTx.forEach(x=>merged.push({kind:'tx',x}));
+    const items=merged.reverse();
+    return `<div class="pro-head"><div class="pro-brand">Coins</div><div class="pro-room">$${balance}</div></div>
     <div class="pro-wrap">
-      <div class="pro-card"><div class="pro-muted">Current balance</div><div class="pro-balance">${balance}</div>
+      <div class="pro-card"><div class="pro-muted">Current balance</div><div class="pro-balance">$${balance}</div>
         <div id="proCoinForm"></div>
         <div class="pro-actions" style="margin-top:14px">
           <button class="pro-btn primary" data-pro-coin="deposit" ${pending?'disabled':''}>＋ ኮይን ገቢ አድርግ</button>
@@ -1071,35 +1180,43 @@ function proPanelHtml(tab){
         ${pending?'<div class="pro-muted" style="margin-top:10px">⏳ የተላከ Coin Request ውሳኔ እየተጠበቀ ነው።</div>':''}
       </div>
       <div class="pro-card"><div class="pro-title">Summary</div>
-        <div class="pro-row"><span class="pro-muted">Total Income</span><b>+${income}</b></div>
-        <div class="pro-row"><span class="pro-muted">Total Expense</span><b>−${expense}</b></div>
-        <div class="pro-row"><span class="pro-muted">Balance</span><b>${balance}</b></div>
+        <div class="pro-row"><span class="pro-muted">Total Income</span><b>+$${income}</b></div>
+        <div class="pro-row"><span class="pro-muted">Total Expense</span><b>-$${expense}</b></div>
+        <div class="pro-row"><span class="pro-muted">Balance</span><b>$${balance}</b></div>
       </div>
       <div class="pro-card"><div class="pro-title">Coin Transactions</div>
-        ${(allTx.length||allReq.filter(q=>q.status==='pending').length)?`<div class="pro-list">${allReq.filter(q=>q.status==='pending').map(q=>`<div class="pro-item"><b>${q.kind==='deposit'?'Income':'Expense'} • ${q.amount||0} coins</b><br><small>Pending</small></div>`).join('')}${allTx.slice().reverse().map(x=>`<div class="pro-item"><b>${esc(x.type||'Transaction')} • ${x.amount||0} coins</b><br><small>${esc(x.status||'Pending')}</small></div>`).join('')}</div>`:'<div class="pro-empty">No coin transactions yet.</div>'}
+        ${items.length?`<div class="pro-list">${items.map(item=>{
+          if(item.kind==='request'){const q=item.q;return `<div class="pro-item coin-tx ${q.kind==='deposit'?'income':'expense'}"><span class="coin-pending-badge">PENDING</span><div style="margin-top:7px"><b>${q.kind==='deposit'?'Income':'Expense'}</b> <span class="tx-amount">${q.kind==='deposit'?'+$':'-$'}${q.amount||0}</span></div><small>You have a request waiting for Caller approval.</small><div style="margin-top:9px"><button class="btn danger small" data-a="cancelcoin" data-id="${esc(q.requestId)}">Cancel</button></div></div>`;}
+          if(item.kind==='cancel'){const q=item.q;return `<div class="pro-item coin-tx cancelled"><div><b>${q.kind==='deposit'?'Income':'Expense'}</b> <span class="tx-amount">${q.kind==='deposit'?'+$':'-$'}${q.amount||0}</span></div><span class="tx-status cancelled">Cancelled</span><br><small>የራስህ ጥያቄ ተሰርዟል።</small></div>`;}
+          const x=item.x;return `<div class="pro-item coin-tx ${txClass(x)}"><div><b>${esc(x.type||'Transaction')}</b> <span class="tx-amount">${txAmount(x)}</span></div><span class="tx-status ${txStatus(x)}">${esc(x.status||'Pending')}</span><br><small>${x.status==='Approved'?'By: Caller':'Request status'}</small></div>`;
+        }).join('')}</div>`:'<div class="pro-empty">No coin transactions yet.</div>'}
       </div>
     </div>`;
   }
 
-  if(tab==='history'){
+    if(tab==='history'){
     const h=proHistory();
     return `<div class="pro-head"><div class="pro-brand">History</div><div class="pro-room">${h.length} records</div></div>
     <div class="pro-wrap"><div class="pro-card">
       <div class="pro-title">Game history</div>
-      ${h.length?`<div class="pro-list">${h.slice().reverse().map(x=>`<div class="pro-item"><b>${esc(x.winnerName||x.winner||'Completed round')}</b><br><small>${esc(x.shapeName||x.shape||'Bingo')} • ${x.fee??''}</small></div>`).join('')}</div>`:'<div class="pro-empty">Game history will appear here.</div>'}
+      ${h.length?`<div class="pro-list">${h.slice().reverse().map(x=>{
+        const winners=(x.winners||[]).map(w=>'#'+esc(w.card)+' ('+esc(w.name||'Player')+')').join('፣ ');
+        const result=x.noWinner?'No winner':('Winner: '+(winners||'—'));
+        return `<div class="pro-item"><b>${esc(result)}</b><br><small>${esc(x.shapeName||x.shape||'Bingo')} • $${x.fee??0}</small></div>`;
+      }).join('')}</div>`:'<div class="pro-empty">Game history will appear here.</div>'}
     </div></div>`;
   }
 
-  if(tab==='players'){
+    if(tab==='players'){
     const ps=Object.values(S.players||{});
     return `<div class="pro-head"><div class="pro-brand">Players</div><div class="pro-room">${ps.length} players</div></div>
     <div class="pro-wrap"><div class="pro-card">
       <div class="pro-title">Players in room</div>
-      ${ps.length?`<div class="pro-list">${ps.map(x=>`<div class="pro-item"><b>${esc(x.name||'Player')}</b><br><small>ID: ${esc(x.playerId||'—')} · <span style="color:${x.online===false?'#d52b2b':'#159447'}">${x.online===false?'Offline':'Online'}</span></small></div>`).join('')}</div>`:'<div class="pro-empty">No players yet.</div>'}
+      ${ps.length?`<div class="pro-list">${ps.map(x=>`<div class="pro-item"><b>${esc(x.name||'Player')}</b><br><small>ID: ${esc(x.playerId||'—')}</small><div style="display:flex;justify-content:space-between;gap:8px;margin-top:7px"><span style="color:${x.online===false?'#d52b2b':'#159447'};font-weight:800">${x.online===false?'Offline':'Online'}</span><b>$${proCoins(x)}</b></div></div>`).join('')}</div>`:'<div class="pro-empty">No players yet.</div>'}
     </div></div>`;
   }
 
-  // Game tab: close panel and reveal the original, fully functional game UI.
+    // Game tab: close panel and reveal the original, fully functional game UI.
   return '';
 }
 function showProCoinForm(kind){
@@ -1172,7 +1289,7 @@ document.addEventListener('click', (e)=>{
   if(confirmCoin){
     const input=$('proCoinAmount');
     const n=Math.floor(Number(input?.value));
-    if(!Number.isFinite(n)||n<=0){ toast('Valid amount required'); return; }
+    if(!Number.isFinite(n)||n<=0){ toast('የኮይኑን ትክክለኛ መጠን ያስገቡ።'); return; }
     const kind=confirmCoin.dataset.proConfirm;
     requestCoin(kind,n).then(()=>{
       const box=$('proCoinForm');
@@ -1195,4 +1312,4 @@ setInterval(() => {
 }, 250)
   </script>
 </body>
-</html> 
+</html>

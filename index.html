@@ -661,13 +661,13 @@ async function pickCard(no){
   try {
     if (owner === S.uid) {
       const opId=requestId();
-      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{opId,action:'refund',card:no,fee,oldBalance:balance,newBalance:balance+fee,status:'ready'});
+      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{opId,action:'refund',card:String(no),fee,oldBalance:balance,newBalance:balance+fee,status:'ready'});
       await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: null, [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee, [`rooms/${S.room}/coinTransactions/${opId}`]: {type:'Income',amount:fee,status:'Approved',uid:S.uid,source:'Card refund',card:no,opId} });
       await remove(ref(db,`rooms/${S.room}/gameOps/${S.uid}`));
     } else if (!owner) {
       if (balance < fee) { toast('በቂ ኮይን የለህም (ያለህ ' + balance + '፣ ያስፈልጋል ' + fee + ')። አጫዋቹን ኮይን እንዲልክልህ ጠይቅ።'); return; }
       const opId=requestId();
-      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{opId,action:'buy',card:no,fee,oldBalance:balance,newBalance:balance-fee,status:'ready'});
+      await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{opId,action:'buy',card:String(no),fee,oldBalance:balance,newBalance:balance-fee,status:'ready'});
       await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: S.uid, [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee, [`rooms/${S.room}/coinTransactions/${opId}`]: {type:'Expense',amount:fee,status:'Approved',uid:S.uid,source:'Card fee',card:no,opId} });
       await remove(ref(db,`rooms/${S.room}/gameOps/${S.uid}`));
     }

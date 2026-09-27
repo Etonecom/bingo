@@ -452,17 +452,26 @@ async function decideCoin(rid,approve){
   }
   const next=q.kind==='deposit'?old+amount:old-amount;
   const type=q.kind==='deposit'?'Income':'Expense';
-  // First create a one-time approval guard tied to the exact old/new balance.
-  await set(ref(db,`rooms/${S.room}/coinApprovals/${q.uid}`),{requestId:rid,uid:q.uid,kind:q.kind,amount,oldBalance:old,newBalance:next,status:'ready'});
   await update(ref(db),{
    [`rooms/${S.room}/players/${q.uid}/balance`]:next,
    [`rooms/${S.room}/coinRequests/${rid}/status`]:'approved',
    [`rooms/${S.room}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-   [`rooms/${S.room}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid},
-   [`rooms/${S.room}/coinApprovals/${q.uid}`]:null
+   [`rooms/${S.room}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid}
   });
+  cacheBalance(S.room,q.playerId, next);
   toast('የኮይን ጥያቄው ጸድቋል።');
  }catch(e){toast('የኮይን ጥያቄውን ማስፈጸም አልተቻለም።');}
+}
+async function cancelCoinRequest(rid){
+ const q=S.coinRequests[rid];
+ if(!q||!S.room||q.uid!==S.uid||q.status!=='pending')return;
+ try{
+  await update(ref(db),{
+   [`rooms/${S.room}/coinRequests/${rid}/status`]:'cancelled',
+   [`rooms/${S.room}/coinRequests/${rid}/cancelledAt`]:serverTimestamp()
+  });
+  toast('የኮይን ጥያቄው ተሰርዟል።');
+ }catch(e){toast('የኮይን ጥያቄውን መሰረዝ አልተቻለም።');}
 }
 
 /* ---------- ክፍል መከታተል ---------- */
@@ -653,12 +662,14 @@ async function pickCard(no){
     if (owner === S.uid) {
       const opId=requestId();
       await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{opId,action:'refund',card:String(no),fee,oldBalance:balance,newBalance:balance+fee,status:'ready'});
-      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: null, [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee, [`rooms/${S.room}/coinTransactions/${opId}`]: {type:'Income',amount:fee,status:'Approved',uid:S.uid,source:'Card refund',card:no,opId}, [`rooms/${S.room}/gameOps/${S.uid}`]: null });
+      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: null, [`rooms/${S.room}/players/${S.uid}/balance`]: balance + fee, [`rooms/${S.room}/coinTransactions/${opId}`]: {type:'Income',amount:fee,status:'Approved',uid:S.uid,source:'Card refund',card:no,opId} });
+      await remove(ref(db,`rooms/${S.room}/gameOps/${S.uid}`));
     } else if (!owner) {
       if (balance < fee) { toast('በቂ ኮይን የለህም (ያለህ ' + balance + '፣ ያስፈልጋል ' + fee + ')። አጫዋቹን ኮይን እንዲልክልህ ጠይቅ።'); return; }
       const opId=requestId();
       await set(ref(db,`rooms/${S.room}/gameOps/${S.uid}`),{opId,action:'buy',card:String(no),fee,oldBalance:balance,newBalance:balance-fee,status:'ready'});
-      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: S.uid, [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee, [`rooms/${S.room}/coinTransactions/${opId}`]: {type:'Expense',amount:fee,status:'Approved',uid:S.uid,source:'Card fee',card:no,opId}, [`rooms/${S.room}/gameOps/${S.uid}`]: null });
+      await update(ref(db), { [`rooms/${S.room}/cards/${no}`]: S.uid, [`rooms/${S.room}/players/${S.uid}/balance`]: balance - fee, [`rooms/${S.room}/coinTransactions/${opId}`]: {type:'Expense',amount:fee,status:'Approved',uid:S.uid,source:'Card fee',card:no,opId} });
+      await remove(ref(db,`rooms/${S.room}/gameOps/${S.uid}`));
     }
   } catch (err) { toast('አልተቻለም፦ ' + (err.code || err.message)); }
 }
@@ -777,6 +788,7 @@ function act(a, d){
   else if (a === 'rejectjoin') { approveJoin(d.id,false); return; }
   else if (a === 'approvecoin') { decideCoin(d.id,true); return; }
   else if (a === 'rejectcoin') { decideCoin(d.id,false); return; }
+  else if (a === 'cancelcoin') { cancelCoinRequest(d.id); return; }
   else if (a === 'redeem') { redeemCode(); return; }
   else if (a === 'openroom') { openRoom(); return; }
   else if (a === 'closeroom') { closeRoom(); return; }
@@ -1087,7 +1099,7 @@ function proPanelHtml(tab){
         <div class="pro-row"><span class="pro-muted">Balance</span><b>${balance}</b></div>
       </div>
       <div class="pro-card"><div class="pro-title">Coin Transactions</div>
-        ${(allTx.length||allReq.filter(q=>q.status==='pending').length)?`<div class="pro-list">${allReq.filter(q=>q.status==='pending').map(q=>`<div class="pro-item"><b>${q.kind==='deposit'?'Income':'Expense'} • ${q.amount||0} coins</b><br><small>Pending</small></div>`).join('')}${allTx.slice().reverse().map(x=>`<div class="pro-item"><b>${esc(x.type||'Transaction')} • ${x.amount||0} coins</b><br><small>${esc(x.status||'Pending')}</small></div>`).join('')}</div>`:'<div class="pro-empty">No coin transactions yet.</div>'}
+        ${(allTx.length||allReq.length)?`<div class="pro-list">${allReq.slice().reverse().map(q=>`<div class="pro-item"><b>${q.kind==='deposit'?'Income':'Expense'} • ${q.amount||0} coins</b><br><small>${esc(q.status||'pending')}</small>${q.status==='pending'?`<div style="margin-top:8px"><button class="btn danger small" data-a="cancelcoin" data-id="${esc(q.requestId)}">Cancel</button></div>`:''}</div>`).join('')}${allTx.slice().reverse().map(x=>`<div class="pro-item"><b>${esc(x.type||'Transaction')} • ${x.amount||0} coins</b><br><small>${esc(x.status||'Pending')}</small></div>`).join('')}</div>`:'<div class="pro-empty">No coin transactions yet.</div>'}
       </div>
     </div>`;
   }

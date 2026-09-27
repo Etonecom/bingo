@@ -512,10 +512,10 @@ async function decideCoin(rid,approve){
     // Do not create the transaction and remove the guard in the same multi-path update.
     await set(ref(db,`${base}/coinApprovals/${q.uid}`),{requestId:rid,uid:q.uid,kind:q.kind,amount,oldBalance:old,newBalance:next,status:'ready'});
     try{
-      // coinTransactions requires the request to still be pending.
-      await set(ref(db,`${base}/coinTransactions/${rid}`),{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'});
-      // player balance requires the approval guard to still be ready.
+      // Perform the transaction, balance change and request approval together.
+      // coinApprovals remains in place so the balance rule can verify old/new balance.
       await update(ref(db),{
+        [`${base}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'},
         [`${base}/players/${q.uid}/balance`]:next,
         [`${base}/coinRequests/${rid}/status`]:'approved',
         [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp()
@@ -592,7 +592,13 @@ function subscribeRoom(code){
     if(S.isCaller){
       const pendingIds=new Set(Object.values(S.coinRequests).filter(q=>q&&q.status==='pending'&&q.requestId).map(q=>q.requestId));
       if(coinRequestNoticeReady){
-        for(const id of pendingIds){ if(!knownPendingCoinIds.has(id)){ toast('You have a request'); break; } }
+        for(const id of pendingIds){
+          if(!knownPendingCoinIds.has(id)){
+            noticeQueue.push('You have a request');
+            showNoticeQueue();
+            break;
+          }
+        }
       }
       knownPendingCoinIds=pendingIds;
       coinRequestNoticeReady=true;

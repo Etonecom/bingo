@@ -536,7 +536,7 @@ function showNoticeQueue(){
   const t = $('toast');
   if(!t){ noticeShowing=false; return; }
   t.textContent = msg;
-  t.dataset.openCoins = msg === 'You have a request' ? '1' : '';
+  t.dataset.openCoins = (S.isCaller && msg.indexOf('💰 New Coin Request') === 0) ? '1' : '';
   t.classList.add('show');
   clearTimeout(showNoticeQueue._t);
   showNoticeQueue._t = setTimeout(()=>{
@@ -587,7 +587,11 @@ function subscribeRoom(code){
       if(coinRequestNoticeReady){
         for(const id of pendingIds){
           if(!knownPendingCoinIds.has(id)){
-            noticeQueue.push('You have a request');
+            const q = S.coinRequests[id];
+            const kindText = q && q.kind === 'deposit' ? 'Income' : 'Expense';
+            const sign = q && q.kind === 'deposit' ? '+' : '-';
+            const amount = q && Number.isFinite(+q.amount) ? (+q.amount) : 0;
+            noticeQueue.push('💰 New Coin Request · ' + (q?.name || 'Player') + ' · ' + kindText + ' ' + sign + '$' + amount + ' · Tap to review');
             showNoticeQueue();
             break;
           }
@@ -1211,7 +1215,7 @@ function proPanelHtml(tab){
 
   if(tab==='coins') {
     const allReq=Object.values(S.coinRequests||{}).filter(q=>q&&q.uid===S.uid);
-    const allTx=Object.values(S.coinTransactions||{}).filter(x=>!x.uid||x.uid===S.uid);
+    const allTx=S.isCaller ? Object.values(S.coinTransactions||{}) : Object.values(S.coinTransactions||{}).filter(x=>!x.uid||x.uid===S.uid);
     const income=allTx.filter(x=>x.type==='Income'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const expense=allTx.filter(x=>x.type==='Expense'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const pending=allReq.some(q=>q.status==='pending');

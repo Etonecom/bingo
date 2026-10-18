@@ -245,7 +245,7 @@ const SHAPES = [
   { id: 'full', name: 'ሙሉ ካርድ', hint: 'ሁሉም ሳጥኖች ሲሞሉ' }
 ];
 function shapeOf(id){ return SHAPES.find((s) => s.id === id) || SHAPES[0]; }
-const CALL_MS = 5000;
+const CALL_MS = 7000;
 const WINDOW_MS = 5000;
 const LETTERS = 'BINGO';
 function letterOf(n){ return LETTERS[Math.floor((n - 1) / 15)]; }
@@ -417,6 +417,7 @@ function loadGameHistory(room){
   } catch(e){ return []; }
 }
 function saveGameHistory(room,h){ try { ls.set(historyKey(room),JSON.stringify(h.slice(-100))); } catch(e) {} }
+function clearGameHistory(room){ if(room) ls.del(historyKey(room)); }
 function recordGameHistory(round){
   if(!S.room || !round || round.status!=='done' || !round.result) return;
   const id=String(round.openedAt||round.startedAt||'');
@@ -447,11 +448,20 @@ async function requestIdentityTransfer(existing,name,pid,code){
 }
 async function approveJoin(rid,approve){
  const q=S.joinRequests[rid]; if(!q||!S.room)return; const base=`rooms/${S.room}`;
- try{ if(!approve){await update(ref(db,`${base}/joinRequests/${rid}`),{status:'rejected',decidedAt:serverTimestamp()});return;}
+ try{
+  if(!approve){await update(ref(db,`${base}/joinRequests/${rid}`),{status:'rejected',decidedAt:serverTimestamp()});return;}
   const oldSnap=await get(ref(db,`${base}/players/${q.oldUid}`)); const old=oldSnap.exists()?oldSnap.val():{name:q.name,playerId:q.playerId,balance:0};
-  const updates={}; updates[`${base}/players/${q.newUid}`]={...old,name:q.name,playerId:q.playerId,online:true,lastReconnectedAt:serverTimestamp()}; updates[`${base}/joinRequests/${rid}/status`]='approved'; updates[`${base}/joinRequests/${rid}/decidedAt`]=serverTimestamp();
-  const cardsSnap=await get(ref(db,`${base}/cards`)); const cards=cardsSnap.val()||{}; Object.keys(cards).forEach(no=>{if(cards[no]===q.oldUid)updates[`${base}/cards/${no}`]=q.newUid;});
-  await update(ref(db),updates); await remove(ref(db,`${base}/players/${q.oldUid}`));
+  const updates={};
+  updates[`${base}/players/${q.newUid}`]={...old,name:q.name,playerId:q.playerId,online:true,lastReconnectedAt:serverTimestamp()};
+  updates[`${base}/joinRequests/${rid}/status`]='approved';
+  updates[`${base}/joinRequests/${rid}/decidedAt`]=serverTimestamp();
+  if(q.oldUid !== q.newUid){
+    const cardsSnap=await get(ref(db,`${base}/cards`)); const cards=cardsSnap.val()||{};
+    Object.keys(cards).forEach(no=>{if(cards[no]===q.oldUid)updates[`${base}/cards/${no}`]=q.newUid;});
+    await update(ref(db),updates); await remove(ref(db,`${base}/players/${q.oldUid}`));
+  }else{
+    await update(ref(db),updates);
+  }
  }catch(e){toast('የመግቢያ ፍቃድ አልተሳካም።');}
 }
 async function requestCoin(kind, suppliedAmount){
@@ -487,7 +497,7 @@ async function decideCoin(rid,approve){
       await update(ref(db),{
         [`${base}/coinRequests/${rid}/status`]:'rejected',
         [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-        [`${base}/coinTransactions/${rid}`]:{type:q.kind==='deposit'?'Income':'Expense',amount:+q.amount||0,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
+        [`${base}/coinTransactions/${rid}`]:{type:q.kind==='deposit'?'Income':'Expense',amount:+q.amount||0,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',playerId:q.playerId||'',actorRole:'Caller'}
       });
       toast('የኮይን ጥያቄው ውድቅ ተደርጓል።');
       return;
@@ -602,7 +612,7 @@ function subscribeRoom(code){
     }
     render();
   }));
-  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/coinTransactions`) : query(ref(db, `rooms/${code}/coinTransactions`), orderByChild('uid'), equalTo(S.uid)), snap=>{S.coinTransactions=snap.val()||{};render();}));
+  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/coinTransactions`) : query(ref(db, `rooms/${code}/coinTransactions`), orderByChild('playerId'), equalTo(S.currentPlayerId)), snap=>{S.coinTransactions=snap.val()||{};render();}));
   unsubs.push(onValue(ref(db, `rooms/${code}/round`), (snap) => {
     const existed = snap.exists();
     const newStatus = existed ? snap.val().status : null;
@@ -681,8 +691,11 @@ async function openRoom(){
       if (!s.exists()) { code = c; break; }
     }
     if (!code) throw { code: 'busy' };
+    clearGameHistory(ls.get('bingo_room'));
+    clearGameHistory(ls.get('bingo_previous_room'));
     await set(ref(db, `rooms/${code}/meta`), { owner: S.uid, createdAt: serverTimestamp(), status: 'open' });
     ls.set('bingo_room', code);
+    ls.del('bingo_previous_room');
     S.room = code; subscribeRoom(code); S.screen = 'lobbyCaller';
   } catch (err) {
     S.err = isDenied(err) ? 'አጫዋች ለመሆን መጀመሪያ ኮድ ማስገባት አለብህ።' : 'ክፍል መክፈት አልተቻለም፦ ' + (err.code || err.message);
@@ -706,13 +719,24 @@ async function closeRoom(){
   S.busy=true;S.err='';render(); try{
    const meta=await get(ref(db,`rooms/${code}/meta`));if(!meta.exists())throw{code:'no-room'};
    const snap=await get(ref(db,`rooms/${code}/players`)),players=snap.val()||{}; const existing=Object.keys(players).map(uid=>({uid,p:players[uid]})).find(x=>x.p&&x.p.playerId===pid);
-   if(existing&&existing.uid!==S.uid){await requestIdentityTransfer(existing,name,pid,code);S.busy=false;return;}
+   if(existing&&existing.uid!==S.uid){S.currentPlayerId=pid;await requestIdentityTransfer(existing,name,pid,code);S.busy=false;return;}
    const cached=cachedBalance(code,pid);
+   if(existing && existing.uid===S.uid && existing.p?.online===false){
+    S.currentPlayerId=pid;
+    await requestIdentityTransfer(existing,name,pid,code);
+    S.busy=false;
+    return;
+   }
    if(existing && existing.uid===S.uid){
-    await update(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:existing.p?.joinedAt||serverTimestamp(),online:true,lastSeen:serverTimestamp()});
+    const sameIdentity=existing.p?.playerId===pid;
+    const nextBalance=sameIdentity ? (+existing.p?.balance||0) : (cached==null?0:cached);
+    await update(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,balance:nextBalance,joinedAt:existing.p?.joinedAt||serverTimestamp(),online:true,lastSeen:serverTimestamp()});
    }else{
     await set(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:serverTimestamp(),balance:cached==null?0:cached,online:true,lastSeen:serverTimestamp()});
    }
+   const previousRoom=ls.get('bingo_previous_room')||ls.get('bingo_room');
+   if(previousRoom && previousRoom!==code){ clearGameHistory(previousRoom); }
+   ls.del('bingo_previous_room');
    ls.set('bingo_name',name);ls.set('bingo_player_id',pid);ls.set('bingo_room',code);S.room=code;S.currentPlayerId=pid;subscribeRoom(code);setupPresence(code);S.screen='lobbyPlayer';
   }catch(err){S.err=err.code==='no-room'?'ይህ ክፍል አልተገኘም። ኮዱን አጫዋቹን ጠይቅ።':'መግባት አልተቻለም፦ '+(err.code||err.message);} S.busy=false;render();
 }
@@ -720,7 +744,8 @@ async function closeRoom(){
 async function leaveRoom(){
   const code = S.room;
   unsubscribeAll();
-  try { await remove(ref(db, `rooms/${code}/players/${S.uid}`)); } catch (e) {}
+  try { await update(ref(db, `rooms/${code}/players/${S.uid}`), { online:false, lastSeen:serverTimestamp() }); } catch (e) {}
+  if(code) ls.set('bingo_previous_room', code);
   leaveLocal();
   S.screen = 'player';
   render();
@@ -753,7 +778,7 @@ async function refundJoiningCards(){
       await update(ref(db),{
         [`${base}/cards/${card}`]:null,
         [`${base}/players/${uid}/balance`]:oldBalance+fee,
-        [`${base}/coinTransactions/${opId}`]:{uid,amount:fee,type:'Income',status:'Approved',source:'Card refund',opId}
+        [`${base}/coinTransactions/${opId}`]:{uid,playerId:p.playerId||'',playerName:p.name||'Player',amount:fee,type:'Income',status:'Approved',source:'Card refund',opId}
       });
       await runTransaction(ref(db,`${base}/round`), r => {
         if(!r || r.status !== 'joining') return;
@@ -1221,7 +1246,7 @@ function proPanelHtml(tab){
 
   if(tab==='coins') {
     const allReq=Object.values(S.coinRequests||{}).filter(q=>q&&q.uid===S.uid);
-    const allTx=S.isCaller ? Object.values(S.coinTransactions||{}) : Object.values(S.coinTransactions||{}).filter(x=>!x.uid||x.uid===S.uid);
+    const allTx=S.isCaller ? Object.values(S.coinTransactions||{}) : Object.values(S.coinTransactions||{}).filter(x=>x.playerId===S.currentPlayerId);
     const income=allTx.filter(x=>x.type==='Income'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const expense=allTx.filter(x=>x.type==='Expense'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const pending=allReq.some(q=>q.status==='pending');

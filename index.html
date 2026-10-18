@@ -510,7 +510,7 @@ async function decideCoin(rid,approve){
         [`${base}/coinRequests/${rid}/status`]:'rejected',
         [`${base}/coinRequests/${rid}/reason`]:'insufficient-balance',
         [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-        [`${base}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
+        [`${base}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player', playerId:q.playerId||'', actorRole:'Caller'}
       });
       toast('የተጫዋቹ ቀሪ ሒሳብ አነስተኛ ነው። ወጪ አልተፈጸመም።');
       return;
@@ -521,7 +521,7 @@ async function decideCoin(rid,approve){
     // Caller is the room owner, so use only the existing rule-authorized paths.
     // Stage 1 intentionally does not use an extra coinApprovals path.
     await update(ref(db),{
-      [`${base}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'},
+      [`${base}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player', playerId:q.playerId||'', actorRole:'Caller'},
       [`${base}/players/${q.uid}/balance`]:next,
       [`${base}/coinRequests/${rid}/status`]:'approved',
       [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp()

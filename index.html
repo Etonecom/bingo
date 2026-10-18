@@ -337,7 +337,7 @@ function toast(msg){
 const S = {
   screen: 'loading',      // loading | role | player | callerCode | callerHome | lobbyCaller | lobbyPlayer | fatal
   uid: null, isCaller: false,
-  room: null, meta: null, players: {}, round: null, cards: {}, claims: {}, joinRequests: {}, coinRequests: {}, coinTransactions: {}, history: [], currentPlayerId: null, pendingJoin: null,
+  room: null, meta: null, players: {}, round: null, cards: {}, claims: {}, joinRequests: {}, coinRequests: {}, coinTransactions: {}, callerWallet: { balance: 0 }, callerTransactions: {}, history: [], currentPlayerId: null, pendingJoin: null,
   marks: {}, chooser: false,
   roundForm: { shape: 'line', fee: 100 },
   form: { name: ls.get('bingo_name') || '', playerId: ls.get('bingo_player_id') || '', room: '', code: '' },
@@ -371,6 +371,11 @@ function hideSplash(){
 async function checkCaller(){
   try { const s = await get(ref(db, 'callers/' + S.uid)); return s.exists(); } catch (e) { return false; }
 }
+async function ensureCallerWallet(){
+  if(!S.uid || !S.isCaller) return;
+  const r=ref(db,`callerWallets/${S.uid}`), snap=await get(r);
+  if(!snap.exists()) await set(r,{balance:0,createdAt:serverTimestamp()});
+}
 async function enterExistingRoom(code, owner){
   try {
     const m = await get(ref(db, `rooms/${code}/meta`));
@@ -391,6 +396,7 @@ async function restore(){
   if (role === 'caller') {
     S.isCaller = await checkCaller();
     if (!S.isCaller) { ls.del('bingo_room'); S.screen = 'callerCode'; return; }
+    await ensureCallerWallet();
     if (room && await enterExistingRoom(room, true)) { setupPresence(room); return; }
     S.screen = 'callerHome';
     return;
@@ -510,7 +516,7 @@ async function decideCoin(rid,approve){
         [`${base}/coinRequests/${rid}/status`]:'rejected',
         [`${base}/coinRequests/${rid}/reason`]:'insufficient-balance',
         [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-        [`${base}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player', playerId:q.playerId||'', actorRole:'Caller'}
+        [`${base}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',playerId:q.playerId||'',actorRole:'Caller'}
       });
       toast('የተጫዋቹ ቀሪ ሒሳብ አነስተኛ ነው። ወጪ አልተፈጸመም።');
       return;
@@ -521,7 +527,7 @@ async function decideCoin(rid,approve){
     // Caller is the room owner, so use only the existing rule-authorized paths.
     // Stage 1 intentionally does not use an extra coinApprovals path.
     await update(ref(db),{
-      [`${base}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player', playerId:q.playerId||'', actorRole:'Caller'},
+      [`${base}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player',playerId:q.playerId||'',actorRole:'Caller'},
       [`${base}/players/${q.uid}/balance`]:next,
       [`${base}/coinRequests/${rid}/status`]:'approved',
       [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp()
@@ -569,6 +575,10 @@ function subscribeRoom(code){
   S.history = loadGameHistory(code);
   knownPendingCoinIds = new Set();
   coinRequestNoticeReady = false;
+  if(S.isCaller){
+    unsubs.push(onValue(ref(db,`callerWallets/${S.uid}`), snap=>{ S.callerWallet=snap.val()||{balance:0}; render(); }));
+    unsubs.push(onValue(ref(db,`callerTransactions/${S.uid}`), snap=>{ S.callerTransactions=snap.val()||{}; render(); }));
+  }
   unsubs.push(onValue(ref(db, `rooms/${code}/meta`), (snap) => {
     if (!snap.exists()) { roomGone(); return; }
     S.meta = snap.val();
@@ -662,6 +672,7 @@ async function startCaller(){
   ls.set('bingo_role', 'caller');
   S.err = ''; S.busy = true; render();
   S.isCaller = await checkCaller();
+  if(S.isCaller) await ensureCallerWallet();
   S.busy = false;
   S.screen = S.isCaller ? 'callerHome' : 'callerCode';
   render();
@@ -755,7 +766,7 @@ async function openRound(){
   if (!S.room) return;
   S.busy = true; render();
   try {
-    await set(ref(db, `rooms/${S.room}/round`), { shape: S.roundForm.shape, fee: S.roundForm.fee, status: 'joining', totalCollected: 0, callerFee: 0, prizePool: 0, openedAt: serverTimestamp() });
+    await set(ref(db, `rooms/${S.room}/round`), { shape: S.roundForm.shape, fee: S.roundForm.fee, status: 'joining', totalCollected: 0, callerFee: 0, prizePool: 0, payoutStatus: 'unsettled', payoutId: null, openedAt: serverTimestamp() });
     await remove(ref(db, `rooms/${S.room}/cards`));
     await remove(ref(db, `rooms/${S.room}/claims`));
   } catch (err) { toast('ዙር መክፈት አልተቻለም፦ ' + (err.code || err.message)); }
@@ -831,6 +842,11 @@ async function pickCard(no){
           [`${base}/cards/${no}`]: null,
           [`${base}/players/${S.uid}/balance`]: balance + fee
         });
+        await runTransaction(ref(db,`${base}/round`), r=>{
+          if(!r || r.status!=='joining') return;
+          const total=Math.max(0,(+r.totalCollected||0)-fee);
+          return {...r,totalCollected:total,callerFee:total*0.10,prizePool:total*0.90};
+        });
       } finally {
         await remove(ref(db,`${base}/gameOps/${S.uid}`)).catch(()=>{});
       }
@@ -841,6 +857,11 @@ async function pickCard(no){
         await update(ref(db), {
           [`${base}/cards/${no}`]: S.uid,
           [`${base}/players/${S.uid}/balance`]: balance - fee
+        });
+        await runTransaction(ref(db,`${base}/round`), r=>{
+          if(!r || r.status!=='joining') return;
+          const total=(+r.totalCollected||0)+fee;
+          return {...r,totalCollected:total,callerFee:total*0.10,prizePool:total*0.90};
         });
       } finally {
         await remove(ref(db,`${base}/gameOps/${S.uid}`)).catch(()=>{});
@@ -877,9 +898,50 @@ async function drawNext(){
     scheduleDraw(CALL_MS);
   }
 }
+async function settleRound(){
+  if(!S.isCaller || !S.room) return;
+  const roundRef=ref(db,`rooms/${S.room}/round`);
+  const gate=await runTransaction(roundRef,r=>{
+    if(!r || r.status!=='done' || r.payoutStatus==='settled' || r.payoutStatus==='processing') return;
+    return {...r,payoutStatus:'processing',payoutId:requestId()};
+  });
+  if(!gate.committed) return;
+  const r=gate.snapshot.val(), payoutId=r.payoutId, total=Math.max(0,Math.floor(+r.totalCollected||0));
+  const winners=(!r.result?.noWinner && Array.isArray(r.result?.winners)) ? r.result.winners : [];
+  const callerAmount=winners.length ? Math.floor(total*0.10) : total;
+  const prizeAmount=winners.length ? total-callerAmount : 0;
+  try{
+    const cw=await get(ref(db,`callerWallets/${S.uid}`));
+    const callerWallet=cw.exists()?cw.val():{balance:0};
+    const updates={};
+    if(callerAmount>0){
+      updates[`callerWallets/${S.uid}/balance`]=(+callerWallet.balance||0)+callerAmount;
+      updates[`callerTransactions/${S.uid}/${payoutId}`]={type:'Income',amount:callerAmount,status:'Approved',source:winners.length?'Caller fee':'No-winner round',roomId:S.room,roundId:payoutId,at:serverTimestamp()};
+    }
+    const share=winners.length?Math.floor(prizeAmount/winners.length):0;
+    let remainder=winners.length?prizeAmount-share*winners.length:0;
+    for(let i=0;i<winners.length;i++){
+      const w=winners[i], ps=await get(ref(db,`rooms/${S.room}/players/${w.uid}`));
+      if(!ps.exists()) continue;
+      const p=ps.val(), amount=share+(i===0?remainder:0);
+      remainder=i===0?0:remainder;
+      if(amount<=0) continue;
+      updates[`rooms/${S.room}/players/${w.uid}/balance`]=(+p.balance||0)+amount;
+      updates[`rooms/${S.room}/coinTransactions/${payoutId}_winner_${i}`]={uid:w.uid,playerId:p.playerId||'',playerName:p.name||'Player',type:'Income',amount,status:'Approved',source:'Bingo prize',payoutId,roomId:S.room,roundId:payoutId};
+    }
+    updates[`rooms/${S.room}/round/payoutStatus`]='settled';
+    updates[`rooms/${S.room}/round/callerFee`]=callerAmount;
+    updates[`rooms/${S.room}/round/prizePool`]=prizeAmount;
+    updates[`rooms/${S.room}/round/settledAt`]=serverTimestamp();
+    await update(ref(db),updates);
+  }catch(e){
+    await update(roundRef,{payoutStatus:'failed',payoutError:String(e.code||e.message||e)}).catch(()=>{});
+    toast('የዙሩ የcoin ክፍፍል አልተሳካም።');
+  }
+}
 async function finalizeNoWinner(){
   if (!S.room) return;
-  try { await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], reason: 'exhausted' } }); } catch (err) {}
+  try { await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], reason: 'exhausted' }, payoutStatus:'pending' }); await settleRound(); } catch (err) {}
 }
 function onClaimsChanged(){
   if (!S.isCaller || !S.round) return;
@@ -915,13 +977,14 @@ async function resolveClaims(){
   let updates;
   const allCardNos = Object.keys(S.cards).map(Number);
   const allOut = allCardNos.length > 0 && allCardNos.every((n) => newOut[n]);
-  if (winners.length) updates = { status: 'done', out: newOut, result: { noWinner: false, winners }, claimDeadline: null, note: note };
-  else if (allOut) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'allOut' }, claimDeadline: null, note: note };
-  else if (called.length >= 75) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'exhausted' }, claimDeadline: null, note: note };
+  if (winners.length) updates = { status: 'done', out: newOut, result: { noWinner: false, winners }, claimDeadline: null, note: note, payoutStatus:'pending' };
+  else if (allOut) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'allOut' }, claimDeadline: null, note: note, payoutStatus:'pending' };
+  else if (called.length >= 75) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'exhausted' }, claimDeadline: null, note: note, payoutStatus:'pending' };
   else updates = { status: 'running', out: newOut, claimDeadline: null, note: note };
   try {
     await update(ref(db, `rooms/${S.room}/round`), updates);
     await remove(ref(db, `rooms/${S.room}/claims`));
+    if(updates.status==='done' && updates.result?.reason!=='cancelled') await settleRound();
   } catch (err) { toast('ስህተት፦ ' + (err.code || err.message)); }
   if (updates.status === 'running') scheduleDraw(CALL_MS);
 }
@@ -1220,7 +1283,7 @@ function proPanelHtml(tab){
   const name = me?.name || S.form?.name || 'Player';
   const pid = me?.playerId || S.form?.playerId || '—';
   const room = S.room || S.form?.room || '—';
-  const balance = proCoins(me);
+  const balance = S.isCaller ? Number(S.callerWallet?.balance||0) : proCoins(me);
   const role = S.isCaller ? 'Caller' : 'Player';
 
   if(tab==='profile') return `
@@ -1246,7 +1309,7 @@ function proPanelHtml(tab){
 
   if(tab==='coins') {
     const allReq=Object.values(S.coinRequests||{}).filter(q=>q&&q.uid===S.uid);
-    const allTx=S.isCaller ? Object.values(S.coinTransactions||{}) : Object.values(S.coinTransactions||{}).filter(x=>x.playerId===S.currentPlayerId);
+    const allTx=S.isCaller ? Object.values(S.callerTransactions||{}) : Object.values(S.coinTransactions||{}).filter(x=>x.playerId===S.currentPlayerId);
     const income=allTx.filter(x=>x.type==='Income'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const expense=allTx.filter(x=>x.type==='Expense'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const pending=allReq.some(q=>q.status==='pending');

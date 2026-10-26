@@ -100,21 +100,41 @@ input.code{text-align:center;letter-spacing:.35em;font-weight:800;font-size:28px
 .callball .n{font-size:38px;font-weight:800}
 .callball.empty{background:var(--surface2);box-shadow:0 0 0 3px var(--line);color:var(--muted)}
 .ballrow{display:flex;align-items:center;gap:14px}
+.call-bingo-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.call-bingo-row .callball{
+  width:96px;
+  height:96px;
+  flex:none;
+}
+.call-bingo-row .callball .l{font-size:18px}
+.call-bingo-row .callball .n{font-size:38px}
+.call-bingo-row .bingobtn{
+  flex:1;
+  min-height:96px;
+  font-size:22px;
+  border-radius:16px;
+  margin:0;
+}
 .board{display:grid;grid-template-columns:16px repeat(15,1fr);gap:2px;font-size:10px;margin-top:10px}
 .board .l{font-weight:800;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px}
 .board .c{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;background:var(--surface2);color:var(--muted)}
 .board .c.on{background:var(--accent);color:var(--accent-ink);font-weight:700}
 .board .c.last{background:var(--gold);color:var(--gold-ink);font-weight:800}
-.cardgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}
-.cardgrid .h{text-align:center;font-weight:800;color:var(--accent);font-size:16px}
-.cardgrid button{aspect-ratio:1;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:9px;font-weight:700;font-size:17px;padding:0}
+.cardgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin-top:4px;max-width:280px}
+.cardgrid .h{text-align:center;font-weight:800;color:var(--accent);font-size:11px}
+.cardgrid button{aspect-ratio:1;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:5px;font-weight:700;font-size:11px;padding:0;max-height:42px}
 .cardgrid button.m{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.cardgrid button.free{background:var(--gold);color:var(--gold-ink);border-color:var(--gold);font-size:11px}
-.cardbox{position:relative}
+.cardgrid button.free{background:var(--gold);color:var(--gold-ink);border-color:var(--gold);font-size:8px}
+.cardbox{position:relative;max-width:300px}
+.cardbox .panel{padding:10px}
 .cardbox.out .cardgrid{opacity:.35}
 .cardbox .stamp{position:absolute;inset:34px 0 0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .cardbox .stamp span{background:var(--red);color:#fff;font-weight:800;padding:5px 12px;border-radius:8px;transform:rotate(-6deg)}
-.bingobtn{width:100%;min-height:60px;border:0;border-radius:12px;background:var(--red);color:#fff;font-weight:800;font-size:22px;margin-top:4px}
+.bingobtn{width:100%;min-height:52px;border:0;border-radius:14px;background:var(--red);color:#fff;font-weight:800;font-size:18px;margin:0}
 .cdbox{display:flex;align-items:center;gap:10px}
 .cdnum{width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
 .toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;font-weight:600;max-width:calc(100% - 28px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;text-align:center}
@@ -212,13 +232,13 @@ input.code{background:linear-gradient(180deg,#fff,#f1f5f9);font-size:30px}.roomc
 .stat3{gap:10px}.stat3 div{border:1px solid #e2e8f0;border-radius:15px;background:linear-gradient(180deg,#f8fafc,#edf2f7);padding:11px 6px}.stat3 b{font-size:18px}.stat3 small{font-weight:600}
 .ball{background:linear-gradient(145deg,#ffd76b,#f0a91b);box-shadow:0 0 0 4px rgba(255,200,87,.28),0 18px 35px rgba(168,112,11,.24);border-color:#fff}.callball{background:linear-gradient(145deg,#ffd76b,#f0a91b);box-shadow:0 0 0 4px rgba(255,200,87,.28),0 14px 28px rgba(168,112,11,.22);border-color:#fff}.callball.empty{background:#eef2f7;box-shadow:0 0 0 4px #e1e7ef;color:#8b98aa}
 .board{gap:3px;margin-top:12px}.board .c{border-radius:6px;background:#edf2f7}.board .c.on{background:var(--accent);box-shadow:0 2px 6px color-mix(in srgb,var(--accent) 25%,transparent)}.board .c.last{background:var(--gold);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--gold)}
-.cardgrid{gap:6px}.cardgrid .h{font-size:17px;letter-spacing:.05em}.cardgrid button{border:1px solid #dbe4ee;border-radius:12px;background:linear-gradient(145deg,#f8fafc,#e8eef5);box-shadow:0 3px 7px rgba(25,45,75,.06);transition:transform .12s,box-shadow .12s}.cardgrid button:hover{transform:translateY(-2px);box-shadow:0 6px 13px rgba(25,45,75,.12)}.cardgrid button.m{background:linear-gradient(145deg,var(--accent),color-mix(in srgb,var(--accent) 68%,#111827));box-shadow:0 5px 12px color-mix(in srgb,var(--accent) 24%,transparent)}.cardgrid button.free{background:linear-gradient(145deg,#ffd86f,#efae22)}
-.bingobtn{min-height:64px;border-radius:18px;background:linear-gradient(135deg,#ef5261,#bd263d);box-shadow:0 12px 24px rgba(189,38,61,.22);letter-spacing:.02em}.bingobtn:active{transform:translateY(2px)}
+.cardgrid{gap:2px;max-width:280px}.cardgrid .h{font-size:11px;letter-spacing:.03em}.cardgrid button{border:1px solid #dbe4ee;border-radius:5px;background:linear-gradient(145deg,#f8fafc,#e8eef5);box-shadow:0 1px 3px rgba(25,45,75,.06);transition:transform .12s,box-shadow .12s;font-size:11px;max-height:42px}.cardgrid button:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(25,45,75,.10)}.cardgrid button.m{background:linear-gradient(145deg,var(--accent),color-mix(in srgb,var(--accent) 68%,#111827));box-shadow:0 2px 6px color-mix(in srgb,var(--accent) 24%,transparent)}.cardgrid button.free{background:linear-gradient(145deg,#ffd86f,#efae22);font-size:8px}
+.bingobtn{min-height:52px;border-radius:14px;background:linear-gradient(135deg,#ef5261,#bd263d);box-shadow:0 8px 18px rgba(189,38,61,.22);letter-spacing:.02em;font-size:18px}.bingobtn:active{transform:translateY(2px)}
 .cdbox{padding:11px 13px;border-radius:16px;background:linear-gradient(135deg,#fff4f2,#fff);border:1px solid #ffd5d0}.cdnum{background:linear-gradient(145deg,#ef5261,#bd263d);box-shadow:0 5px 12px rgba(189,38,61,.22)}
 .toast{top:calc(18px + env(safe-area-inset-top,0px));border-radius:16px;box-shadow:0 12px 28px rgba(0,0,0,.18);backdrop-filter:blur(12px)}
 .dev-foot{padding-bottom:10px}
 #proPanel{background:radial-gradient(circle at 100% 0,rgba(23,105,255,.10),transparent 30%),var(--pro-bg)}.pro-card{border-radius:24px;box-shadow:0 12px 34px rgba(20,30,50,.08)}#proNav{bottom:12px;border-radius:25px;box-shadow:0 14px 38px rgba(20,30,50,.18)}.pro-nav-btn.active{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pro-primary) 16%,transparent)}
-@media(max-width:420px){main{padding-left:12px;padding-right:12px}.hero{border-radius:24px;padding:21px 18px}.panel{padding:15px}.cardgrid button{font-size:15px}.roomcode{font-size:50px}}
+@media(max-width:420px){main{padding-left:12px;padding-right:12px}.hero{border-radius:24px;padding:21px 18px}.panel{padding:15px}.cardgrid button{font-size:10px;max-height:38px}.roomcode{font-size:50px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
 </style>
 
@@ -346,7 +366,7 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 const CARD_COUNT = 30;
-const FEES = [10, 20, 30, 40, 50, 100, 150, 200, 300];
+const FEES = [10, 20, 30, 40, 50, 100, 150, 200];
 const TOPUPS = [10,50, 100, 500];
 const SHAPES = [
   { id: 'line', name: 'አንድ መስመር ', hint: 'አንድ አግድም ወይም አንድ ቋሚ መስመር' },
@@ -355,7 +375,7 @@ const SHAPES = [
   { id: 'twoH', name: 'ሁለት አግድም መስመር', hint: 'ማንኛውም ሁለት አግድም መስመሮች' },
   { id: 'x', name: 'X', hint: 'ሁለቱም ሰያፍ መስመሮች' },
   { id: 'square', name: 'ካሬ', hint: 'የካርዱ አራቱም ዳርቻ (16 ሳጥኖች)' },
-  { id: 'full', name: 'ሙሉ ካርድ', hint: 'ሁሉም ሳጥኖች ሲሞሉ' }
+  { id: 'full', name: 'ሙሉ ካርቴላ', hint: 'ሁሉም ሳጥኖች ሲሞሉ' }
 ];
 function shapeOf(id){ return SHAPES.find((s) => s.id === id) || SHAPES[0]; }
 const CALL_MS = 7000;
@@ -839,7 +859,7 @@ async function closeRoom(){
   
   async function joinRoom(){
   const name=(S.form.name||'').trim(),pid=(S.form.playerId||'').trim(),code=(S.form.room||'').trim();
-  if(!name)return setErr('ስምህን ጻፍ።'); if(!/^[A-Za-z0-9_-]{3,24}$/.test(pid))return setErr('Player ID ከ3 እስከ 24 ፊደል/ቁጥር ይሁን።'); if(!/^\d{4}$/.test(code))return setErr('የክፍሉን የ4 አሃዝ ኮድ ጻፍ።');
+  if(!name)return setErr('ማን ብዬ ልሰይምህ ¿ እባክህ ስምህን አስገባ'); if(!/^[A-Za-z0-9_-]{3,24}$/.test(pid))return setErr('Player ID ከ3 እስከ 24 ፊደል/ቁጥር ይሁን።'); if(!/^\d{4}$/.test(code))return setErr('የክፍሉን የ4 አሃዝ ኮድ ጻፍ።');
   S.busy=true;S.err='';render(); try{
    const meta=await get(ref(db,`rooms/${code}/meta`));if(!meta.exists())throw{code:'no-room'};
    const snap=await get(ref(db,`rooms/${code}/players`)),players=snap.val()||{}; const existing=Object.keys(players).map(uid=>({uid,p:players[uid]})).find(x=>x.p&&x.p.playerId===pid);
@@ -862,7 +882,7 @@ async function closeRoom(){
    if(previousRoom && previousRoom!==code){ clearGameHistory(previousRoom); }
    ls.del('bingo_previous_room');
    ls.set('bingo_name',name);ls.set('bingo_player_id',pid);ls.set('bingo_room',code);S.room=code;S.currentPlayerId=pid;subscribeRoom(code);setupPresence(code);S.screen='lobbyPlayer';
-  }catch(err){S.err=err.code==='no-room'?'ይህ ክፍል አልተገኘም። ኮዱን አጫዋቹን ጠይቅ።':'መግባት አልተቻለም፦ '+(err.code||err.message);} S.busy=false;render();
+  }catch(err){S.err=err.code==='no-room'?'የት ልትገባ ነው ¿ የቤት ቁጥር አጫዋቹን ጠይቀው !':'መግባት አልተቻለም፦ '+(err.code||err.message);} S.busy=false;render();
 }
 
 async function leaveRoom(){
@@ -916,7 +936,7 @@ async function refundJoiningCards(){
 }
 async function resetRound(){
   if (!S.room) return;
-  if (!confirm('ይህን ዙር ልሰርዘው? የተያዙ ካርዶች ይለቀቃሉ እና የካርድ ክፍያው ይመለሳል።')) return;
+  if (!confirm('ይህን ዙር ልሰርዘው? የተያዙ ካርቴላዎች ይለቀቃሉ እና የካርቴላ ክፍያው ይመለሳል።')) return;
   stopCallerTimers();
   S.busy = true; render();
   try {
@@ -988,7 +1008,7 @@ async function pickCard(no){
 let drawTimer = null, resolveTimer = null, endTimer = null;
 function stopCallerTimers(){ clearTimeout(drawTimer); clearTimeout(resolveTimer); clearTimeout(endTimer); drawTimer = resolveTimer = endTimer = null; }
 async function startCalling(){
-  if (!S.room || !Object.keys(S.cards).length) { if (!Object.keys(S.cards).length) toast('ቢያንስ አንድ ካርድ መያዝ አለበት'); return; }
+  if (!S.room || !Object.keys(S.cards).length) { if (!Object.keys(S.cards).length) toast('ቢያንስ አንድ ካርቴላ መያዝ አለበት'); return; }
   stopCallerTimers();
   try {
     await update(ref(db, `rooms/${S.room}/round`), { status: 'running', called: [], out: {}, result: null, claimDeadline: null, startedAt: serverTimestamp() });
@@ -1080,10 +1100,10 @@ async function resolveClaims(){
     if (newOut[cardNo]) return;                       // ቀድሞ ከዙሩ ወጥቷል
     if (winsOnLast(cardOf(cardNo), S.round.shape, called)) {
       winners.push({ card: cardNo, uid: c.uid });
-      notes.push(nameOf(c.uid) + ' ካርድ #' + cardNo + ' በትክክል አሸንፏል!');
+      notes.push(nameOf(c.uid) + ' ካርቴላ #' + cardNo + ' በትክክል አሸንፏል!');
     } else {
       newOut[cardNo] = true;
-      notes.push(nameOf(c.uid) + ' ካርድ #' + cardNo + ' ላይ ተሳስቶ BINGO ብሏል፤ ካርዱ ከዙሩ ወጥቷል።');
+      notes.push(nameOf(c.uid) + ' ካርቴላ #' + cardNo + ' ላይ ተሳስቶ BINGO ብሏል፤ ካርዱ ከዙሩ ወጥቷል።');
     }
   });
   const note = notes.length ? notes.join(' · ') : null;
@@ -1120,7 +1140,7 @@ async function claimCard(no){
 }
 function tapBingo(){
   const elig = myEligibleCards();
-  if (!elig.length) { toast('ለመመዝገብ የቀረ ካርድ የለህም'); return; }
+  if (!elig.length) { toast('ለመመዝገብ የቀረ ካርቴላ የለህም'); return; }
   if (elig.length === 1) { claimCard(elig[0]); return; }
   S.chooser = !S.chooser; render();
 }
@@ -1211,7 +1231,7 @@ function cardBoxHTML(no){
     else h += '<button class="' + (mk[v] ? 'm' : '') + '" data-a="mark" data-card="' + no + '" data-n="' + v + '"' + (out ? ' disabled' : '') + '>' + v + '</button>';
   }
   h += '</div></div>';
-  if (out) h += '<div class="stamp"><span>ከዙሩ ወጥቷል</span></div>';
+  if (out) h += '<div class="stamp"><span> የተሳሳተ ካርቴላ ! ለዚህ ዙር ታግዷል</span></div>';
   return h + '</div>';
 }
 function playerName(uid){ return (S.players[uid] && S.players[uid].name) || 'ተጫዋች'; }
@@ -1224,17 +1244,17 @@ function resultHTML(result){
   if (result.noWinner) {
     const msgs = {
       cancelled: 'አጫዋቹ ይህን ዙር በእጅ አቁሞታል።',
-      allOut: 'ማንም ትክክለኛ BINGO ስላላለ (የተያዙት ካርዶች ሁሉ በስህተት BINGO በመባላቸው ከዙሩ ወጥተዋል) ዙሩ ተዘግቷል።',
+      allOut: 'ማንም ትክክለኛ BINGO ስላላለ (የተያዙት ካርቴላዎች ሁሉ በስህተት BINGO በመባላቸው ከዙሩ ወጥተዋል) ዙሩ ተዘግቷል።',
       exhausted: '75ቱም ቁጥሮች ተጠርተዋል፤ በጊዜ ትክክለኛ BINGO ያለ አልነበረም።'
     };
     const outList = result.reason === 'allOut'
-      ? '<p class="namelist">የወጡ ካርዶች፦ ' + Object.keys(S.round.out || {}).map(Number).sort((a, b) => a - b)
+      ? '<p class="namelist">የወጡ ካርቴላዎች፦ ' + Object.keys(S.round.out || {}).map(Number).sort((a, b) => a - b)
           .map((n) => '#' + n + ' (' + esc(playerName(S.cards[n])) + ')').join('፣ ') + '</p>'
       : '';
     return '<div class="panel warn"><h2>ማንም አላሸነፈም</h2><p>' + (msgs[result.reason] || msgs.exhausted) + '</p>' + outList + '</div>';
   }
   const mine = result.winners.some((w) => w.uid === S.uid);
-  return '<div class="panel ok"><h2>BINGO! ዙሩ አለቀ</h2><p>አሸናፊ ካርዶች፦ ' +
+  return '<div class="panel ok"><h2>BINGO! ዙሩ አለቀ</h2><p>አሸናፊ ካርቴላዎች፦ ' +
     result.winners.map((w) => '#' + w.card + ' (' + esc(playerName(w.uid)) + ')' + (w.uid === S.uid ? ' — አንተ' : '')).join('፣ ') + '</p>' +
     (mine ? '<p style="font-weight:800;margin-top:4px">አሸንፈሃል! 🎉</p>' : '') + '</div>';
 }
@@ -1258,9 +1278,9 @@ function view(){
     case 'player':
       return '<div class="hero"><div class="ball sm" aria-hidden="true">B</div><h1>ክፍል ግባ</h1></div>' +
         '<div class="panel"><label for="f-name">ስምህ</label>' +
-        '<input id="f-name" data-f="name" maxlength="20" autocomplete="off" placeholder="ለምሳሌ ሰላም" value="' + esc(S.form.name) + '">' +
+        '<input id="f-name" data-f="name" maxlength="20" autocomplete="off" placeholder="ለምሳሌ አበበ" value="' + esc(S.form.name) + '">' +
         '<label for="f-playerId">የተጫዋች ID</label>' +
-        '<input id="f-playerId" data-f="playerId" maxlength="24" autocomplete="off" placeholder="ለምሳሌ A1025" value="' + esc(S.form.playerId) + '">' +
+        '<input id="f-playerId" data-f="playerId" maxlength="24" autocomplete="off" placeholder="ለምሳሌ 1025" value="' + esc(S.form.playerId) + '">' +
         '<small class="muted">ይህ ID በዚህ ክፍል ውስጥ ልዩ መሆን አለበት።</small>' +
         '<label for="f-room">የክፍል ኮድ (4 አሃዝ)</label>' +
         '<input id="f-room" class="code" data-f="room" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000" value="' + esc(S.form.room) + '"></div>' +
@@ -1295,16 +1315,16 @@ function view(){
         mid = resultPanel + '<div class="panel"><h2>' + (st === 'done' ? 'ቀጣይ ዙር' : 'ዙር ክፈት') + '</h2>' +
           '<label>ቅርጽ</label>' +
           SHAPES.map((s) => '<button class="shapebtn' + (S.roundForm.shape === s.id ? ' on' : '') + '" data-a="shape" data-v="' + s.id + '"><b>' + esc(s.name) + '</b><span>' + esc(s.hint) + '</span></button>').join('') +
-          '<label>የካርድ ዋጋ (ኮይን)</label><div class="grid4">' +
+          '<label>የካርቴላ ዋጋ (ኮይን)</label><div class="grid4">' +
           FEES.map((v) => '<button class="opt' + (S.roundForm.fee === v ? ' on' : '') + '" data-a="fee" data-v="' + v + '">' + v + '</button>').join('') + '</div>' +
           '<button class="btn" data-a="' + (st === 'done' ? 'newround' : 'openround') + '" style="margin-top:14px"' + (S.busy ? ' disabled' : '') + '>' + (S.busy ? 'እየተከፈተ ነው…' : 'ዙር ክፈት') + '</button></div>';
       } else if (st === 'joining') {
         const taken = Object.keys(S.cards).length, pot = taken * S.round.fee;
         mid = '<div class="panel"><h2>ዙር ክፍት ነው</h2>' +
           '<div class="stat3"><div><small>ቅርጽ</small><b>' + esc(shapeOf(S.round.shape).name) + '</b></div>' +
-          '<div><small>የካርድ ዋጋ</small><b>' + S.round.fee + '</b></div>' +
-          '<div><small>የተያዙ ካርዶች</small><b>' + taken + '</b></div></div>' +
-          '<p class="muted">ጠቅላላ፦ ' + pot + ' ኮይን። ተጫዋቾች ካርድ እየመረጡ ነው።</p>' +
+          '<div><small>የካርቴላ ዋጋ</small><b>' + S.round.fee + '</b></div>' +
+          '<div><small>የተያዙ ካርቴላዎች</small><b>' + taken + '</b></div></div>' +
+          '<p class="muted">ጠቅላላ፦ ' + pot + ' ኮይን። ተጫዋቾች ካርቴላ እየመረጡ ነው።</p>' +
           '<button class="btn" data-a="startgame"' + (taken && !S.busy ? '' : ' disabled') + '>ጀምር</button>' +
           '<button class="btn alt" data-a="resetround" style="margin-top:8px"' + (S.busy ? ' disabled' : '') + '>ዙሩን ሰርዝ</button></div>';
       } else {
@@ -1341,23 +1361,35 @@ function view(){
           cells += '<button class="' + cls + '" data-a="pickcard" data-n="' + no + '"' + (dis ? ' disabled' : '') + '>' + no + '</button>';
         }
         mid = '<div class="panel"><h2>ቅርጽ፦ ' + esc(sh.name) + '</h2><p class="muted">' + esc(sh.hint) + '</p>' +
-          '<p>የካርድ ዋጋ፦ <b>' + fee + ' ኮይን</b> · ኮይንህ፦ <b>' + myBalance + '</b>' + (mineAll.length ? ' · የያዝካቸው፦ ' + mineAll.map((c) => '#' + c).join(', ') : '') + '</p>' +
+          '<p>የካርቴላ ዋጋ፦ <b>' + fee + ' ኮይን</b> · ኮይንህ፦ <b>' + myBalance + '</b>' + (mineAll.length ? ' · የያዝካቸው፦ ' + mineAll.map((c) => '#' + c).join(', ') : '') + '</p>' +
           (myBalance < fee && !mineAll.length ? '<p class="muted">በቂ ኮይን የለህም። አጫዋቹ ኮይን እስኪልክልህ ጠብቅ።</p>' : '') + '</div>' +
-          '<div class="panel"><h2>ካርድ ምረጥ</h2><p class="muted">የተያዘ ካርድ ለሌላ ሰው አይሰጥም። የያዝከውን ድጋሚ ብትነካው ትለቀዋለህ።</p><div class="pick">' + cells + '</div></div>';
+          '<div class="panel"><h2>ካርቴላ ምረጥ</h2><p class="muted">የተያዘ ካርቴላ ለሌላ ሰው አይሰጥም። የያዝከውን ድጋሚ ብትነካው ትለቀዋለህ።</p><div class="pick">' + cells + '</div></div>';
       } else if (st === 'running' || st === 'claim') {
         const called = S.round.called || [];
         const elig = myEligibleCards();
-        mid = '<div class="panel"><div class="ballrow">' + callBallHTML(called) +
-          '<div><b>' + esc(shapeOf(S.round.shape).name) + '</b><p class="muted">' + called.length + ' ከ75 ተጠርተዋል</p></div></div></div>';
-        if (st === 'claim') mid += '<div class="ok"><div class="cdbox"><span class="cdnum cdv">' + cdLeft() + '</span><span>BINGO ተብሏል፤ በ' + Math.ceil(WINDOW_MS / 1000) + ' ሰከንድ ውስጥ BINGO ያሉ ሁሉ ይመዘገባሉ።</span></div></div>';
-        mid += noteHTML();
+
+        mid = '<div class="panel"><div class="call-bingo-row">' + callBallHTML(called);
         if (elig.length) {
           mid += '<button class="bingobtn" data-a="bingo"' + (S.chooser ? ' disabled' : '') + '>BINGO!</button>';
-          if (S.chooser) mid += '<div class="panel"><b>የትኛው ካርድ?</b><div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">' +
-            elig.map((c) => '<button class="btn" data-a="claimcard" data-n="' + c + '">ካርድ #' + c + '</button>').join('') + '</div></div>';
-        } else if (!mineAll.length) {
-          mid += '<div class="panel"><p class="muted">በዚህ ዙር ካርድ አልያዝክም፤ እየተመለከትክ ነው።</p></div>';
+        } else {
+          mid += '<div style="flex:1"><b>' + esc(shapeOf(S.round.shape).name) + '</b><p class="muted" style="margin:0">' + called.length + ' ከ75 ተጠርተዋል</p></div>';
         }
+        mid += '</div></div>';
+
+        if (st === 'claim') {
+          mid += '<div class="ok"><div class="cdbox"><span class="cdnum cdv">' + cdLeft() + '</span><span>BINGO ተብሏል፤ በ' + Math.ceil(WINDOW_MS / 1000) + ' ሰከንድ ውስጥ BINGO ያሉ ሁሉ ይመዘገባሉ።</span></div></div>';
+        }
+        mid += noteHTML();
+
+        if (elig.length) {
+          if (S.chooser) {
+            mid += '<div class="panel"><b>የትኛው ካርቴላ?</b><div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">' +
+              elig.map((c) => '<button class="btn" data-a="claimcard" data-n="' + c + '">ካርድ #' + c + '</button>').join('') + '</div></div>';
+          }
+        } else if (!mineAll.length) {
+          mid += '<div class="panel"><p class="muted">በዚህ ዙር ካርቴላ አልያዝክም፤ እየተመለከትክ ነው።</p></div>';
+        }
+
         mid += mineAll.map(cardBoxHTML).join('');
       } else {
         mid = (S.round.result ? resultHTML(S.round.result) : '') + '<div class="ok"><p>ቀጣዩ ዙር እስኪከፈት ጠብቅ።</p></div>';

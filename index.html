@@ -187,126 +187,13 @@ body.dark-ui{--pro-bg:#0d1118;--pro-card:#151b24;--pro-text:#eef3fb;--pro-muted:
 .coin-cancel-btn{background:#dc2626;color:#fff}
 .coin-submit-btn:active,.coin-cancel-btn:active{transform:scale(.98)}
 </style>
-
-<style id="bingoPremiumUI">
-:root{
-  --bg:#f6f8fc; --surface:#ffffff; --surface2:#eef2f7; --ink:#162033; --muted:#68758a; --line:#e2e8f0;
-  --gold:#ffc857; --accent:#1769ff; --accent-ink:#fff; --red:#ef5261;
-  --shadow:0 18px 55px rgba(24,42,77,.10); --soft-shadow:0 8px 24px rgba(24,42,77,.08);
-}
-body{min-height:100vh;background:radial-gradient(circle at 10% -5%,rgba(23,105,255,.13),transparent 33%),radial-gradient(circle at 100% 0%,rgba(255,200,87,.14),transparent 28%),var(--bg);color:var(--ink)}
-body[data-role="caller"]{--accent:#e5485d;--accent-ink:#fff;background:radial-gradient(circle at 90% -5%,rgba(229,72,93,.16),transparent 34%),radial-gradient(circle at 0% 0%,rgba(255,200,87,.14),transparent 28%),var(--bg)}
-main{max-width:620px;padding:24px 16px 64px;gap:16px}
-.hero{position:relative;overflow:hidden;align-items:flex-start;text-align:left;padding:24px 22px 22px;border:1px solid rgba(255,255,255,.45);border-radius:28px;background:linear-gradient(135deg,#122544 0%,#1e4e9a 58%,#2c7bf0 100%);color:#fff;box-shadow:var(--shadow)}
-body[data-role="caller"] .hero{background:linear-gradient(135deg,#351725 0%,#9b3048 58%,#ed5967 100%)}
-.hero::after{content:"";position:absolute;width:150px;height:150px;border:22px solid rgba(255,255,255,.10);border-radius:50%;right:-42px;top:-48px;box-shadow:0 0 0 18px rgba(255,255,255,.06),0 0 0 38px rgba(255,255,255,.04)}
-.hero>*{position:relative;z-index:1}.hero h1{font-size:30px;letter-spacing:-.03em}.hero .muted{color:rgba(255,255,255,.74)}
-.hero .ball.sm{align-self:center;margin-bottom:4px;background:var(--gold);box-shadow:0 0 0 4px rgba(255,200,87,.45),0 12px 28px rgba(0,0,0,.24);border-color:rgba(255,255,255,.85)}
-.panel{border:1px solid rgba(226,232,240,.9);border-radius:22px;padding:18px;background:rgba(255,255,255,.88);box-shadow:var(--soft-shadow);backdrop-filter:blur(12px)}
-.panel h2{font-size:18px;letter-spacing:-.01em}.panel.ok{background:linear-gradient(135deg,#e9fbf0,#f8fffb);border-color:#bfe9ce}.panel.warn{background:linear-gradient(135deg,#fff6df,#fffdf7);border-color:#f1d99a}
-.btn{min-height:54px;border-radius:16px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 70%,#111827));box-shadow:0 10px 22px color-mix(in srgb,var(--accent) 24%,transparent);transition:transform .16s,box-shadow .16s,filter .16s}.btn:hover{filter:brightness(1.04);box-shadow:0 13px 28px color-mix(in srgb,var(--accent) 30%,transparent)}.btn:active{transform:translateY(2px) scale(.99)}.btn.alt{background:var(--surface2);box-shadow:none}.btn.ghost{color:var(--muted);box-shadow:none}
-label{margin-top:16px;color:var(--ink);font-size:14px}input{min-height:56px;border:2px solid #dce4ee;border-radius:16px;background:#fbfdff;box-shadow:inset 0 2px 6px rgba(25,45,75,.03);transition:border-color .16s,box-shadow .16s}input:focus{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 14%,transparent)}
-input.code{background:linear-gradient(180deg,#fff,#f1f5f9);font-size:30px}.roomcode{font-size:58px;color:var(--accent);letter-spacing:.16em}
-.grid4{gap:10px}.opt,.shapebtn{border:2px solid #e0e7ef;border-radius:15px;background:#fbfdff;transition:transform .15s,border-color .15s,background .15s}.opt:hover,.shapebtn:hover{transform:translateY(-1px)}.opt.on,.shapebtn.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,#fff);box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 12%,transparent)}
-.pick{gap:8px}.pick button{border:2px solid #e0e7ef;border-radius:13px;background:#fbfdff;box-shadow:0 3px 8px rgba(21,35,60,.05);transition:transform .12s}.pick button:hover{transform:translateY(-2px)}.pick button.mine{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 70%,#111827));box-shadow:0 7px 16px color-mix(in srgb,var(--accent) 22%,transparent)}
-.stat3{gap:10px}.stat3 div{border:1px solid #e2e8f0;border-radius:15px;background:linear-gradient(180deg,#f8fafc,#edf2f7);padding:11px 6px}.stat3 b{font-size:18px}.stat3 small{font-weight:600}
-.ball{background:linear-gradient(145deg,#ffd76b,#f0a91b);box-shadow:0 0 0 4px rgba(255,200,87,.28),0 18px 35px rgba(168,112,11,.24);border-color:#fff}.callball{background:linear-gradient(145deg,#ffd76b,#f0a91b);box-shadow:0 0 0 4px rgba(255,200,87,.28),0 14px 28px rgba(168,112,11,.22);border-color:#fff}.callball.empty{background:#eef2f7;box-shadow:0 0 0 4px #e1e7ef;color:#8b98aa}
-.board{gap:3px;margin-top:12px}.board .c{border-radius:6px;background:#edf2f7}.board .c.on{background:var(--accent);box-shadow:0 2px 6px color-mix(in srgb,var(--accent) 25%,transparent)}.board .c.last{background:var(--gold);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--gold)}
-.cardgrid{gap:6px}.cardgrid .h{font-size:17px;letter-spacing:.05em}.cardgrid button{border:1px solid #dbe4ee;border-radius:12px;background:linear-gradient(145deg,#f8fafc,#e8eef5);box-shadow:0 3px 7px rgba(25,45,75,.06);transition:transform .12s,box-shadow .12s}.cardgrid button:hover{transform:translateY(-2px);box-shadow:0 6px 13px rgba(25,45,75,.12)}.cardgrid button.m{background:linear-gradient(145deg,var(--accent),color-mix(in srgb,var(--accent) 68%,#111827));box-shadow:0 5px 12px color-mix(in srgb,var(--accent) 24%,transparent)}.cardgrid button.free{background:linear-gradient(145deg,#ffd86f,#efae22)}
-.bingobtn{min-height:64px;border-radius:18px;background:linear-gradient(135deg,#ef5261,#bd263d);box-shadow:0 12px 24px rgba(189,38,61,.22);letter-spacing:.02em}.bingobtn:active{transform:translateY(2px)}
-.cdbox{padding:11px 13px;border-radius:16px;background:linear-gradient(135deg,#fff4f2,#fff);border:1px solid #ffd5d0}.cdnum{background:linear-gradient(145deg,#ef5261,#bd263d);box-shadow:0 5px 12px rgba(189,38,61,.22)}
-.toast{top:calc(18px + env(safe-area-inset-top,0px));border-radius:16px;box-shadow:0 12px 28px rgba(0,0,0,.18);backdrop-filter:blur(12px)}
-.dev-foot{padding-bottom:10px}
-#proPanel{background:radial-gradient(circle at 100% 0,rgba(23,105,255,.10),transparent 30%),var(--pro-bg)}.pro-card{border-radius:24px;box-shadow:0 12px 34px rgba(20,30,50,.08)}#proNav{bottom:12px;border-radius:25px;box-shadow:0 14px 38px rgba(20,30,50,.18)}.pro-nav-btn.active{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pro-primary) 16%,transparent)}
-@media(max-width:420px){main{padding-left:12px;padding-right:12px}.hero{border-radius:24px;padding:21px 18px}.panel{padding:15px}.cardgrid button{font-size:15px}.roomcode{font-size:50px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
-</style>
-
-
-<style id="bingoFullDesignSystem">
-/* Unified theme tokens: every panel, label and section uses these values. */
-:root{--ui-bg:#f5f7fb;--ui-surface:#fff;--ui-surface-2:#eef3f8;--ui-text:#172033;--ui-muted:#66758b;--ui-border:#dce5ef;--ui-primary:var(--pro-primary,#1769ff);--ui-primary-strong:#0f55d6;--ui-danger:#e5485d;--ui-success:#159b63;--ui-shadow:0 16px 42px rgba(20,33,61,.10);--ui-soft:0 8px 22px rgba(20,33,61,.07)}
-body{--role-primary:var(--pro-primary,#1769ff);--role-primary-strong:#0f55d6;--role-soft:rgba(23,105,255,.10);--role-ink:#fff;background:var(--ui-bg);color:var(--ui-text)}
-body[data-role="caller"]{--role-primary:#df4960;--role-primary-strong:#ae2944;--role-soft:rgba(223,73,96,.11);--role-ink:#fff}
-body.dark-ui{--ui-bg:#0c1220;--ui-surface:#151e2d;--ui-surface-2:#202c3d;--ui-text:#f3f7fc;--ui-muted:#aab7c9;--ui-border:#2c3a4e;--ui-primary:var(--pro-primary,#4f8cff);--ui-primary-strong:#7ba8ff;--ui-shadow:0 18px 46px rgba(0,0,0,.28);--ui-soft:0 9px 24px rgba(0,0,0,.22)}
-body.dark-ui[data-role="caller"]{--role-soft:rgba(223,73,96,.17)}
-/* Apply the same readable tokens to the original game screen. */
-main{background:transparent;color:var(--ui-text)}
-.panel{background:var(--ui-surface);border-color:var(--ui-border);color:var(--ui-text);box-shadow:var(--ui-soft)}
-.panel p,.panel .muted,.muted{color:var(--ui-muted)}
-.panel.ok{background:color-mix(in srgb,var(--ui-success) 12%,var(--ui-surface));border-color:color-mix(in srgb,var(--ui-success) 38%,var(--ui-border))}
-.panel.warn{background:color-mix(in srgb,#f2b735 13%,var(--ui-surface));border-color:color-mix(in srgb,#f2b735 45%,var(--ui-border))}
-body[data-role="player"] .btn:not(.alt):not(.ghost):not(.danger){background:linear-gradient(135deg,var(--role-primary),var(--role-primary-strong));color:#fff}
-body[data-role="caller"] .btn:not(.alt):not(.ghost):not(.danger){background:linear-gradient(135deg,var(--role-primary),var(--role-primary-strong));color:#fff}
-.btn.alt{background:var(--ui-surface-2);color:var(--ui-text);border:1px solid var(--ui-border)}
-.btn.ghost{color:var(--ui-muted)}
-label{color:var(--ui-text)}
-input{background:var(--ui-surface);border-color:var(--ui-border);color:var(--ui-text)}
-input::placeholder{color:var(--ui-muted);opacity:.8}
-input.code{background:var(--ui-surface);color:var(--ui-text)}
-.opt,.shapebtn{background:var(--ui-surface);border-color:var(--ui-border);color:var(--ui-text)}
-.opt.on,.shapebtn.on{background:var(--role-soft);border-color:var(--role-primary)}
-.pick button{background:var(--ui-surface);border-color:var(--ui-border);color:var(--ui-text)}
-.pick button.taken{background:var(--ui-surface-2);color:var(--ui-muted)}
-.stat3 div{background:var(--ui-surface-2);border-color:var(--ui-border);color:var(--ui-text)}
-.board .c{background:var(--ui-surface-2);color:var(--ui-muted)}
-.board .l,.cardgrid .h{color:var(--role-primary)}
-.cardgrid button{background:var(--ui-surface-2);border-color:var(--ui-border);color:var(--ui-text)}
-.cardgrid button.m{background:linear-gradient(145deg,var(--role-primary),var(--role-primary-strong));color:#fff}
-.err{background:color-mix(in srgb,var(--ui-danger) 13%,var(--ui-surface));color:color-mix(in srgb,var(--ui-danger) 80%,var(--ui-text));border:1px solid color-mix(in srgb,var(--ui-danger) 32%,var(--ui-border))}
-.ok{background:color-mix(in srgb,var(--ui-success) 13%,var(--ui-surface));color:var(--ui-text)}
-.roomcode{color:var(--role-primary)}
-/* Full-screen Profile / Coins / History / Players surfaces. */
-#proPanel{background:radial-gradient(circle at 100% 0,var(--role-soft),transparent 34%),var(--ui-bg);color:var(--ui-text);padding:22px 16px 108px}
-#proPanel,#proPanel *{color-scheme:light}
-body.dark-ui #proPanel,body.dark-ui #proPanel *{color-scheme:dark}
-.pro-head{max-width:760px;margin:0 auto 18px;min-height:42px}.pro-brand{color:var(--ui-text);font-size:24px;letter-spacing:-.04em}.pro-brand span{color:var(--role-primary)}
-.pro-room{color:var(--ui-muted);background:var(--ui-surface);border-color:var(--ui-border);font-weight:750}
-.pro-wrap{max-width:760px}.pro-card{position:relative;overflow:hidden;background:var(--ui-surface);border-color:var(--ui-border);color:var(--ui-text);box-shadow:var(--ui-shadow);border-radius:24px;padding:19px;margin-bottom:15px}.pro-card::before{content:"";position:absolute;left:0;top:0;width:100%;height:4px;background:linear-gradient(90deg,var(--role-primary),color-mix(in srgb,var(--role-primary) 35%,transparent));opacity:.9}.pro-profile{padding-top:2px}.pro-avatar{background:linear-gradient(135deg,var(--role-primary),var(--role-primary-strong));box-shadow:0 9px 18px color-mix(in srgb,var(--role-primary) 23%,transparent)}.pro-name,.pro-title{color:var(--ui-text)}.pro-id,.pro-muted,.pro-item small{color:var(--ui-muted)}.pro-row{border-bottom-color:var(--ui-border);color:var(--ui-text)}
-.pro-btn{background:var(--ui-surface-2);border:1px solid var(--ui-border);color:var(--ui-text)}.pro-btn.primary{background:linear-gradient(135deg,var(--role-primary),var(--role-primary-strong));color:#fff;box-shadow:0 8px 18px color-mix(in srgb,var(--role-primary) 24%,transparent)}
-.pro-item{background:color-mix(in srgb,var(--ui-surface-2) 45%,var(--ui-surface));border-color:var(--ui-border);color:var(--ui-text)}.pro-empty{color:var(--ui-muted)}
-.pro-colors{padding:4px 0}.pro-color{border-color:var(--ui-surface);box-shadow:0 0 0 1px var(--ui-border)}.pro-color.sel{box-shadow:0 0 0 3px var(--role-primary)}
-.pro-switch{background:var(--ui-surface-2);border:1px solid var(--ui-border)}.pro-switch.on{background:var(--role-primary)}
-.coin-request-box{background:var(--ui-surface);border-color:var(--ui-border);color:var(--ui-text);box-shadow:var(--ui-soft)}.coin-request-help{color:var(--ui-muted)}.coin-amount-input{background:var(--ui-surface);border-color:var(--ui-border);color:var(--ui-text)}.coin-submit-btn{background:var(--ui-success)}.coin-cancel-btn{background:var(--ui-danger)}
-.coin-tx{border-left-color:var(--ui-border)}.coin-tx.income{border-left-color:var(--ui-success)}.coin-tx.expense{border-left-color:#f29b38}.coin-tx .tx-amount{color:var(--ui-text)}.coin-tx.income .tx-amount{color:var(--ui-success)}.coin-tx.expense .tx-amount{color:#d87917}.coin-tx.rejected .tx-amount,.coin-tx.cancelled .tx-amount{color:var(--ui-danger)}
-.tx-status.pending{background:color-mix(in srgb,#f2b735 22%,var(--ui-surface));color:#9a6900}.tx-status.approved{background:color-mix(in srgb,var(--ui-success) 20%,var(--ui-surface));color:var(--ui-success)}.tx-status.rejected,.tx-status.cancelled{background:color-mix(in srgb,var(--ui-danger) 19%,var(--ui-surface));color:var(--ui-danger)}
-/* Caller control room: red identity, stronger request/status hierarchy. */
-body[data-role="caller"] #proPanel .pro-card:first-child{background:linear-gradient(135deg,color-mix(in srgb,var(--role-primary) 12%,var(--ui-surface)),var(--ui-surface))}body[data-role="caller"] #proPanel .pro-brand{letter-spacing:-.02em}body[data-role="caller"] #proPanel .pro-title{font-size:17px}
-/* Bottom navigation follows role + selected player theme in both modes. */
-#proNav{background:color-mix(in srgb,var(--ui-surface) 92%,transparent);border-color:var(--ui-border);box-shadow:0 14px 38px rgba(0,0,0,.18);backdrop-filter:blur(18px)}.pro-nav-btn{color:var(--ui-muted)}.pro-nav-btn.active{background:var(--role-soft);color:var(--role-primary);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--role-primary) 24%,transparent)}
-/* Make the caller/player distinction visible on the Game tab too. */
-body[data-role="caller"] .callball{box-shadow:0 0 0 5px color-mix(in srgb,var(--role-primary) 24%,transparent),0 14px 28px rgba(0,0,0,.22)}
-body[data-role="caller"] .bingobtn{background:linear-gradient(135deg,var(--role-primary),var(--role-primary-strong))}
-@media(max-width:520px){#proPanel{padding-left:12px;padding-right:12px}.pro-card{border-radius:21px;padding:17px}.pro-brand{font-size:22px}}
-</style>
-
-
-<style id="bingoProfessionalNav">
-#proNav{height:76px;align-items:end;padding:8px 9px 7px;gap:3px;background:color-mix(in srgb,var(--ui-surface,#fff) 94%,transparent);border:1px solid var(--ui-border,#dce5ef);border-radius:26px;box-shadow:0 18px 45px rgba(18,32,57,.20);overflow:visible}
-#proNav .pro-nav-btn{position:relative;height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 2px;border-radius:17px;color:var(--ui-muted,#66758b);font:700 10px/1.05 system-ui,-apple-system,sans-serif;letter-spacing:.01em;transition:color .18s,transform .18s,background .18s}
-#proNav .pro-nav-btn:hover{transform:translateY(-2px)}
-#proNav .pro-nav-btn.active{color:var(--role-primary,var(--pro-primary,#1769ff));background:color-mix(in srgb,var(--role-primary,var(--pro-primary,#1769ff)) 10%,transparent);box-shadow:none}
-#proNav .nav-icon{width:23px;height:23px;display:grid;place-items:center}
-#proNav .nav-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-#proNav .pro-nav-btn.active .nav-icon svg{stroke-width:2.15}
-#proNav .nav-game{height:72px;margin-top:-26px;justify-content:flex-end;gap:3px;color:var(--ui-muted,#66758b)}
-#proNav .nav-game-orb{width:58px;height:58px;display:grid;place-items:center;border-radius:20px;background:linear-gradient(145deg,var(--role-primary,var(--pro-primary,#1769ff)),var(--role-primary-strong,#0f55d6));color:#fff;border:5px solid var(--ui-bg,#f5f7fb);box-shadow:0 10px 22px color-mix(in srgb,var(--role-primary,var(--pro-primary,#1769ff)) 35%,transparent),0 0 0 1px color-mix(in srgb,var(--role-primary,var(--pro-primary,#1769ff)) 22%,transparent);transform:translateY(-1px);transition:transform .18s,box-shadow .18s}
-#proNav .nav-game-orb .nav-icon{width:28px;height:28px}.nav-game-orb .nav-icon svg{width:27px;height:27px;stroke-width:1.7}
-#proNav .nav-game.active{background:transparent;color:var(--role-primary,var(--pro-primary,#1769ff))}
-#proNav .nav-game.active .nav-game-orb{transform:translateY(-4px) scale(1.04);box-shadow:0 14px 28px color-mix(in srgb,var(--role-primary,var(--pro-primary,#1769ff)) 42%,transparent),0 0 0 1px color-mix(in srgb,var(--role-primary,var(--pro-primary,#1769ff)) 28%,transparent)}
-body[data-role="caller"] #proNav .nav-game-orb{background:linear-gradient(145deg,var(--role-primary),var(--role-primary-strong));box-shadow:0 10px 22px rgba(174,41,68,.34),0 0 0 1px rgba(223,73,96,.28)}
-body.dark-ui #proNav{box-shadow:0 18px 45px rgba(0,0,0,.42)}
-body.dark-ui #proNav .nav-game-orb{border-color:var(--ui-bg)}
-@media(max-width:380px){#proNav{width:calc(100% - 8px);padding-inline:4px}.pro-nav-btn{font-size:9px!important}.nav-game-orb{width:54px!important;height:54px!important}}
-</style>
-
 </head>
 <body>
 
 <div class="splash" id="splash" aria-live="polite">
   <div class="mid">
     <div class="ball" aria-hidden="true">B</div>
-    <h1 style="color:#162033;">BINGO<span style="color:#FF8C00;">an</span></h1>
+    <h1 style="color:#black;">BINGO<span style="color:#FF8C00;">an</span></h1>
   </div>
   <div class="dev">Developed by Andualem</div>
 </div>
@@ -315,11 +202,11 @@ body.dark-ui #proNav .nav-game-orb{border-color:var(--ui-bg)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div id="proPanel"></div>
 <nav id="proNav" aria-label="Main navigation">
-  <button class="pro-nav-btn active" data-pro-tab="profile"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.7-3.3 3-5 6.5-5s5.8 1.7 6.5 5"/></svg></span><span>Profile</span></button>
-  <button class="pro-nav-btn" data-pro-tab="coins"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h13.5A2.5 2.5 0 0 1 20 10v7a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17V7.5Z"/><path d="M4 8V6.5A2.5 2.5 0 0 1 6.5 4H18M16 14h.1"/></svg></span><span>Coins</span></button>
-  <button class="pro-nav-btn nav-game" data-pro-tab="game"><span class="nav-game-orb"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M9 4v16M15 4v16M4 9h16M4 15h16"/></svg></span></span><span>Game</span></button>
-  <button class="pro-nav-btn" data-pro-tab="history"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.5V12l3 2"/></svg></span><span>History</span></button>
-  <button class="pro-nav-btn" data-pro-tab="players"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><path d="M3.8 19c.6-2.8 2.3-4.2 5.2-4.2s4.6 1.4 5.2 4.2M16 7.2a2.6 2.6 0 0 1 0 5.1M16 15.2c2.2.2 3.5 1.4 4.1 3.8"/></svg></span><span>Players</span></button>
+  <button class="pro-nav-btn active" data-pro-tab="profile"><b>👤</b>Profile</button>
+  <button class="pro-nav-btn" data-pro-tab="coins"><b>🪙</b>Coins</button>
+  <button class="pro-nav-btn" data-pro-tab="game"><b>🎯</b>Game</button>
+  <button class="pro-nav-btn" data-pro-tab="history"><b>📜</b>History</button>
+  <button class="pro-nav-btn" data-pro-tab="players"><b>👥</b>Players</button>
 </nav>
 
 
@@ -329,7 +216,7 @@ body.dark-ui #proNav .nav-game-orb{border-color:var(--ui-bg)}
   
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect, query, orderByChild, equalTo, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp, onDisconnect, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCzg6CzEz9e4Q9icfdoegSZkJh-TQjqIgc",
@@ -346,10 +233,10 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 const CARD_COUNT = 30;
-const FEES = [10, 20, 30, 40, 50, 100, 150, 200, 300];
+const FEES = [10,50, 100, 150, 200, 300, 400, 500, 1000];
 const TOPUPS = [10,50, 100, 500];
 const SHAPES = [
-  { id: 'line', name: 'አንድ መስመር ', hint: 'አንድ አግድም ወይም አንድ ቋሚ መስመር' },
+  { id: 'line', name: 'አንድ መስመር', hint: 'አንድ አግድም ወይም አንድ ቋሚ መስመር' },
   { id: 'two', name: 'ሁለት መስመር (ማንኛውም)', hint: 'ማንኛውም ሁለት መስመሮች፣ አግድምም ቋሚም ሊሆኑ ይችላሉ' },
   { id: 'twoV', name: 'ሁለት ቋሚ መስመር', hint: 'ማንኛውም ሁለት ቋሚ መስመሮች' },
   { id: 'twoH', name: 'ሁለት አግድም መስመር', hint: 'ማንኛውም ሁለት አግድም መስመሮች' },
@@ -358,7 +245,7 @@ const SHAPES = [
   { id: 'full', name: 'ሙሉ ካርድ', hint: 'ሁሉም ሳጥኖች ሲሞሉ' }
 ];
 function shapeOf(id){ return SHAPES.find((s) => s.id === id) || SHAPES[0]; }
-const CALL_MS = 7000;
+const CALL_MS = 5000;
 const WINDOW_MS = 5000;
 const LETTERS = 'BINGO';
 function letterOf(n){ return LETTERS[Math.floor((n - 1) / 15)]; }
@@ -450,7 +337,7 @@ function toast(msg){
 const S = {
   screen: 'loading',      // loading | role | player | callerCode | callerHome | lobbyCaller | lobbyPlayer | fatal
   uid: null, isCaller: false,
-  room: null, meta: null, players: {}, round: null, cards: {}, claims: {}, joinRequests: {}, coinRequests: {}, coinTransactions: {}, callerWallet: { balance: 0 }, callerTransactions: {}, history: [], currentPlayerId: null, pendingJoin: null,
+  room: null, meta: null, players: {}, round: null, cards: {}, claims: {}, joinRequests: {}, coinRequests: {}, coinTransactions: {}, history: [], currentPlayerId: null, pendingJoin: null,
   marks: {}, chooser: false,
   roundForm: { shape: 'line', fee: 100 },
   form: { name: ls.get('bingo_name') || '', playerId: ls.get('bingo_player_id') || '', room: '', code: '' },
@@ -484,11 +371,6 @@ function hideSplash(){
 async function checkCaller(){
   try { const s = await get(ref(db, 'callers/' + S.uid)); return s.exists(); } catch (e) { return false; }
 }
-async function ensureCallerWallet(){
-  if(!S.uid || !S.isCaller) return;
-  const r=ref(db,`callerWallets/${S.uid}`), snap=await get(r);
-  if(!snap.exists()) await set(r,{balance:0,createdAt:serverTimestamp()});
-}
 async function enterExistingRoom(code, owner){
   try {
     const m = await get(ref(db, `rooms/${code}/meta`));
@@ -509,7 +391,6 @@ async function restore(){
   if (role === 'caller') {
     S.isCaller = await checkCaller();
     if (!S.isCaller) { ls.del('bingo_room'); S.screen = 'callerCode'; return; }
-    await ensureCallerWallet();
     if (room && await enterExistingRoom(room, true)) { setupPresence(room); return; }
     S.screen = 'callerHome';
     return;
@@ -536,7 +417,6 @@ function loadGameHistory(room){
   } catch(e){ return []; }
 }
 function saveGameHistory(room,h){ try { ls.set(historyKey(room),JSON.stringify(h.slice(-100))); } catch(e) {} }
-function clearGameHistory(room){ if(room) ls.del(historyKey(room)); }
 function recordGameHistory(round){
   if(!S.room || !round || round.status!=='done' || !round.result) return;
   const id=String(round.openedAt||round.startedAt||'');
@@ -567,20 +447,11 @@ async function requestIdentityTransfer(existing,name,pid,code){
 }
 async function approveJoin(rid,approve){
  const q=S.joinRequests[rid]; if(!q||!S.room)return; const base=`rooms/${S.room}`;
- try{
-  if(!approve){await update(ref(db,`${base}/joinRequests/${rid}`),{status:'rejected',decidedAt:serverTimestamp()});return;}
+ try{ if(!approve){await update(ref(db,`${base}/joinRequests/${rid}`),{status:'rejected',decidedAt:serverTimestamp()});return;}
   const oldSnap=await get(ref(db,`${base}/players/${q.oldUid}`)); const old=oldSnap.exists()?oldSnap.val():{name:q.name,playerId:q.playerId,balance:0};
-  const updates={};
-  updates[`${base}/players/${q.newUid}`]={...old,name:q.name,playerId:q.playerId,online:true,lastReconnectedAt:serverTimestamp()};
-  updates[`${base}/joinRequests/${rid}/status`]='approved';
-  updates[`${base}/joinRequests/${rid}/decidedAt`]=serverTimestamp();
-  if(q.oldUid !== q.newUid){
-    const cardsSnap=await get(ref(db,`${base}/cards`)); const cards=cardsSnap.val()||{};
-    Object.keys(cards).forEach(no=>{if(cards[no]===q.oldUid)updates[`${base}/cards/${no}`]=q.newUid;});
-    await update(ref(db),updates); await remove(ref(db,`${base}/players/${q.oldUid}`));
-  }else{
-    await update(ref(db),updates);
-  }
+  const updates={}; updates[`${base}/players/${q.newUid}`]={...old,name:q.name,playerId:q.playerId,online:true,lastReconnectedAt:serverTimestamp()}; updates[`${base}/joinRequests/${rid}/status`]='approved'; updates[`${base}/joinRequests/${rid}/decidedAt`]=serverTimestamp();
+  const cardsSnap=await get(ref(db,`${base}/cards`)); const cards=cardsSnap.val()||{}; Object.keys(cards).forEach(no=>{if(cards[no]===q.oldUid)updates[`${base}/cards/${no}`]=q.newUid;});
+  await update(ref(db),updates); await remove(ref(db,`${base}/players/${q.oldUid}`));
  }catch(e){toast('የመግቢያ ፍቃድ አልተሳካም።');}
 }
 async function requestCoin(kind, suppliedAmount){
@@ -616,7 +487,7 @@ async function decideCoin(rid,approve){
       await update(ref(db),{
         [`${base}/coinRequests/${rid}/status`]:'rejected',
         [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-        [`${base}/coinTransactions/${rid}`]:{type:q.kind==='deposit'?'Income':'Expense',amount:+q.amount||0,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',playerId:q.playerId||'',actorRole:'Caller'}
+        [`${base}/coinTransactions/${rid}`]:{type:q.kind==='deposit'?'Income':'Expense',amount:+q.amount||0,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
       });
       toast('የኮይን ጥያቄው ውድቅ ተደርጓል።');
       return;
@@ -629,7 +500,7 @@ async function decideCoin(rid,approve){
         [`${base}/coinRequests/${rid}/status`]:'rejected',
         [`${base}/coinRequests/${rid}/reason`]:'insufficient-balance',
         [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp(),
-        [`${base}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',playerId:q.playerId||'',actorRole:'Caller'}
+        [`${base}/coinTransactions/${rid}`]:{type:'Expense',amount,status:'Rejected',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'}
       });
       toast('የተጫዋቹ ቀሪ ሒሳብ አነስተኛ ነው። ወጪ አልተፈጸመም።');
       return;
@@ -640,7 +511,7 @@ async function decideCoin(rid,approve){
     // Caller is the room owner, so use only the existing rule-authorized paths.
     // Stage 1 intentionally does not use an extra coinApprovals path.
     await update(ref(db),{
-      [`${base}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player',playerId:q.playerId||'',actorRole:'Caller'},
+      [`${base}/coinTransactions/${rid}`]:{type,amount,status:'Approved',requestId:rid,uid:q.uid,playerName:q.name||'Player',actorRole:'Caller'},
       [`${base}/players/${q.uid}/balance`]:next,
       [`${base}/coinRequests/${rid}/status`]:'approved',
       [`${base}/coinRequests/${rid}/decidedAt`]:serverTimestamp()
@@ -665,7 +536,7 @@ function showNoticeQueue(){
   const t = $('toast');
   if(!t){ noticeShowing=false; return; }
   t.textContent = msg;
-  t.dataset.openCoins = (S.isCaller && msg.indexOf('💰 New Coin Request') === 0) ? '1' : '';
+  t.dataset.openCoins = msg === 'You have a request' ? '1' : '';
   t.classList.add('show');
   clearTimeout(showNoticeQueue._t);
   showNoticeQueue._t = setTimeout(()=>{
@@ -688,10 +559,6 @@ function subscribeRoom(code){
   S.history = loadGameHistory(code);
   knownPendingCoinIds = new Set();
   coinRequestNoticeReady = false;
-  if(S.isCaller){
-    unsubs.push(onValue(ref(db,`callerWallets/${S.uid}`), snap=>{ S.callerWallet=snap.val()||{balance:0}; render(); }));
-    unsubs.push(onValue(ref(db,`callerTransactions/${S.uid}`), snap=>{ S.callerTransactions=snap.val()||{}; render(); }));
-  }
   unsubs.push(onValue(ref(db, `rooms/${code}/meta`), (snap) => {
     if (!snap.exists()) { roomGone(); return; }
     S.meta = snap.val();
@@ -720,11 +587,7 @@ function subscribeRoom(code){
       if(coinRequestNoticeReady){
         for(const id of pendingIds){
           if(!knownPendingCoinIds.has(id)){
-            const q = S.coinRequests[id];
-            const kindText = q && q.kind === 'deposit' ? 'Income' : 'Expense';
-            const sign = q && q.kind === 'deposit' ? '+' : '-';
-            const amount = q && Number.isFinite(+q.amount) ? (+q.amount) : 0;
-            noticeQueue.push('💰 New Coin Request · ' + (q?.name || 'Player') + ' · ' + kindText + ' ' + sign + '$' + amount + ' · Tap to review');
+            noticeQueue.push('You have a request');
             showNoticeQueue();
             break;
           }
@@ -735,7 +598,7 @@ function subscribeRoom(code){
     }
     render();
   }));
-  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/coinTransactions`) : query(ref(db, `rooms/${code}/coinTransactions`), orderByChild('playerId'), equalTo(S.currentPlayerId)), snap=>{S.coinTransactions=snap.val()||{};render();}));
+  unsubs.push(onValue(S.isCaller ? ref(db, `rooms/${code}/coinTransactions`) : query(ref(db, `rooms/${code}/coinTransactions`), orderByChild('uid'), equalTo(S.uid)), snap=>{S.coinTransactions=snap.val()||{};render();}));
   unsubs.push(onValue(ref(db, `rooms/${code}/round`), (snap) => {
     const existed = snap.exists();
     const newStatus = existed ? snap.val().status : null;
@@ -785,7 +648,6 @@ async function startCaller(){
   ls.set('bingo_role', 'caller');
   S.err = ''; S.busy = true; render();
   S.isCaller = await checkCaller();
-  if(S.isCaller) await ensureCallerWallet();
   S.busy = false;
   S.screen = S.isCaller ? 'callerHome' : 'callerCode';
   render();
@@ -815,11 +677,8 @@ async function openRoom(){
       if (!s.exists()) { code = c; break; }
     }
     if (!code) throw { code: 'busy' };
-    clearGameHistory(ls.get('bingo_room'));
-    clearGameHistory(ls.get('bingo_previous_room'));
     await set(ref(db, `rooms/${code}/meta`), { owner: S.uid, createdAt: serverTimestamp(), status: 'open' });
     ls.set('bingo_room', code);
-    ls.del('bingo_previous_room');
     S.room = code; subscribeRoom(code); S.screen = 'lobbyCaller';
   } catch (err) {
     S.err = isDenied(err) ? 'አጫዋች ለመሆን መጀመሪያ ኮድ ማስገባት አለብህ።' : 'ክፍል መክፈት አልተቻለም፦ ' + (err.code || err.message);
@@ -843,24 +702,13 @@ async function closeRoom(){
   S.busy=true;S.err='';render(); try{
    const meta=await get(ref(db,`rooms/${code}/meta`));if(!meta.exists())throw{code:'no-room'};
    const snap=await get(ref(db,`rooms/${code}/players`)),players=snap.val()||{}; const existing=Object.keys(players).map(uid=>({uid,p:players[uid]})).find(x=>x.p&&x.p.playerId===pid);
-   if(existing&&existing.uid!==S.uid){S.currentPlayerId=pid;await requestIdentityTransfer(existing,name,pid,code);S.busy=false;return;}
+   if(existing&&existing.uid!==S.uid){await requestIdentityTransfer(existing,name,pid,code);S.busy=false;return;}
    const cached=cachedBalance(code,pid);
-   if(existing && existing.uid===S.uid && existing.p?.online===false){
-    S.currentPlayerId=pid;
-    await requestIdentityTransfer(existing,name,pid,code);
-    S.busy=false;
-    return;
-   }
    if(existing && existing.uid===S.uid){
-    const sameIdentity=existing.p?.playerId===pid;
-    const nextBalance=sameIdentity ? (+existing.p?.balance||0) : (cached==null?0:cached);
-    await update(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,balance:nextBalance,joinedAt:existing.p?.joinedAt||serverTimestamp(),online:true,lastSeen:serverTimestamp()});
+    await update(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:existing.p?.joinedAt||serverTimestamp(),online:true,lastSeen:serverTimestamp()});
    }else{
     await set(ref(db,`rooms/${code}/players/${S.uid}`),{name,playerId:pid,joinedAt:serverTimestamp(),balance:cached==null?0:cached,online:true,lastSeen:serverTimestamp()});
    }
-   const previousRoom=ls.get('bingo_previous_room')||ls.get('bingo_room');
-   if(previousRoom && previousRoom!==code){ clearGameHistory(previousRoom); }
-   ls.del('bingo_previous_room');
    ls.set('bingo_name',name);ls.set('bingo_player_id',pid);ls.set('bingo_room',code);S.room=code;S.currentPlayerId=pid;subscribeRoom(code);setupPresence(code);S.screen='lobbyPlayer';
   }catch(err){S.err=err.code==='no-room'?'ይህ ክፍል አልተገኘም። ኮዱን አጫዋቹን ጠይቅ።':'መግባት አልተቻለም፦ '+(err.code||err.message);} S.busy=false;render();
 }
@@ -868,8 +716,7 @@ async function closeRoom(){
 async function leaveRoom(){
   const code = S.room;
   unsubscribeAll();
-  try { await update(ref(db, `rooms/${code}/players/${S.uid}`), { online:false, lastSeen:serverTimestamp() }); } catch (e) {}
-  if(code) ls.set('bingo_previous_room', code);
+  try { await remove(ref(db, `rooms/${code}/players/${S.uid}`)); } catch (e) {}
   leaveLocal();
   S.screen = 'player';
   render();
@@ -879,7 +726,7 @@ async function openRound(){
   if (!S.room) return;
   S.busy = true; render();
   try {
-    await set(ref(db, `rooms/${S.room}/round`), { shape: S.roundForm.shape, fee: S.roundForm.fee, status: 'joining', totalCollected: 0, callerFee: 0, prizePool: 0, payoutStatus: 'unsettled', payoutId: null, openedAt: serverTimestamp() });
+    await set(ref(db, `rooms/${S.room}/round`), { shape: S.roundForm.shape, fee: S.roundForm.fee, status: 'joining', openedAt: serverTimestamp() });
     await remove(ref(db, `rooms/${S.room}/cards`));
     await remove(ref(db, `rooms/${S.room}/claims`));
   } catch (err) { toast('ዙር መክፈት አልተቻለም፦ ' + (err.code || err.message)); }
@@ -901,13 +748,7 @@ async function refundJoiningCards(){
     try{
       await update(ref(db),{
         [`${base}/cards/${card}`]:null,
-        [`${base}/players/${uid}/balance`]:oldBalance+fee,
-        [`${base}/coinTransactions/${opId}`]:{uid,playerId:p.playerId||'',playerName:p.name||'Player',amount:fee,type:'Income',status:'Approved',source:'Card refund',opId}
-      });
-      await runTransaction(ref(db,`${base}/round`), r => {
-        if(!r || r.status !== 'joining') return;
-        const total = Math.max(0,(+r.totalCollected||0)-fee);
-        return {...r,totalCollected:total,callerFee:total*0.10,prizePool:total*0.90};
+        [`${base}/players/${uid}/balance`]:oldBalance+fee
       });
     }finally{
       await remove(ref(db,`${base}/gameOps/${uid}`)).catch(()=>{});
@@ -955,11 +796,6 @@ async function pickCard(no){
           [`${base}/cards/${no}`]: null,
           [`${base}/players/${S.uid}/balance`]: balance + fee
         });
-        await runTransaction(ref(db,`${base}/round`), r=>{
-          if(!r || r.status!=='joining') return;
-          const total=Math.max(0,(+r.totalCollected||0)-fee);
-          return {...r,totalCollected:total,callerFee:total*0.10,prizePool:total*0.90};
-        });
       } finally {
         await remove(ref(db,`${base}/gameOps/${S.uid}`)).catch(()=>{});
       }
@@ -970,11 +806,6 @@ async function pickCard(no){
         await update(ref(db), {
           [`${base}/cards/${no}`]: S.uid,
           [`${base}/players/${S.uid}/balance`]: balance - fee
-        });
-        await runTransaction(ref(db,`${base}/round`), r=>{
-          if(!r || r.status!=='joining') return;
-          const total=(+r.totalCollected||0)+fee;
-          return {...r,totalCollected:total,callerFee:total*0.10,prizePool:total*0.90};
         });
       } finally {
         await remove(ref(db,`${base}/gameOps/${S.uid}`)).catch(()=>{});
@@ -1011,50 +842,9 @@ async function drawNext(){
     scheduleDraw(CALL_MS);
   }
 }
-async function settleRound(){
-  if(!S.isCaller || !S.room) return;
-  const roundRef=ref(db,`rooms/${S.room}/round`);
-  const gate=await runTransaction(roundRef,r=>{
-    if(!r || r.status!=='done' || r.payoutStatus==='settled' || r.payoutStatus==='processing') return;
-    return {...r,payoutStatus:'processing',payoutId:requestId()};
-  });
-  if(!gate.committed) return;
-  const r=gate.snapshot.val(), payoutId=r.payoutId, total=Math.max(0,Math.floor(+r.totalCollected||0));
-  const winners=(!r.result?.noWinner && Array.isArray(r.result?.winners)) ? r.result.winners : [];
-  const callerAmount=winners.length ? Math.floor(total*0.10) : total;
-  const prizeAmount=winners.length ? total-callerAmount : 0;
-  try{
-    const cw=await get(ref(db,`callerWallets/${S.uid}`));
-    const callerWallet=cw.exists()?cw.val():{balance:0};
-    const updates={};
-    if(callerAmount>0){
-      updates[`callerWallets/${S.uid}/balance`]=(+callerWallet.balance||0)+callerAmount;
-      updates[`callerTransactions/${S.uid}/${payoutId}`]={type:'Income',amount:callerAmount,status:'Approved',source:winners.length?'Caller fee':'No-winner round',roomId:S.room,roundId:payoutId,at:serverTimestamp()};
-    }
-    const share=winners.length?Math.floor(prizeAmount/winners.length):0;
-    let remainder=winners.length?prizeAmount-share*winners.length:0;
-    for(let i=0;i<winners.length;i++){
-      const w=winners[i], ps=await get(ref(db,`rooms/${S.room}/players/${w.uid}`));
-      if(!ps.exists()) continue;
-      const p=ps.val(), amount=share+(i===0?remainder:0);
-      remainder=i===0?0:remainder;
-      if(amount<=0) continue;
-      updates[`rooms/${S.room}/players/${w.uid}/balance`]=(+p.balance||0)+amount;
-      updates[`rooms/${S.room}/coinTransactions/${payoutId}_winner_${i}`]={uid:w.uid,playerId:p.playerId||'',playerName:p.name||'Player',type:'Income',amount,status:'Approved',source:'Bingo prize',payoutId,roomId:S.room,roundId:payoutId};
-    }
-    updates[`rooms/${S.room}/round/payoutStatus`]='settled';
-    updates[`rooms/${S.room}/round/callerFee`]=callerAmount;
-    updates[`rooms/${S.room}/round/prizePool`]=prizeAmount;
-    updates[`rooms/${S.room}/round/settledAt`]=serverTimestamp();
-    await update(ref(db),updates);
-  }catch(e){
-    await update(roundRef,{payoutStatus:'failed',payoutError:String(e.code||e.message||e)}).catch(()=>{});
-    toast('የዙሩ የcoin ክፍፍል አልተሳካም።');
-  }
-}
 async function finalizeNoWinner(){
   if (!S.room) return;
-  try { await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], reason: 'exhausted' }, payoutStatus:'pending' }); await settleRound(); } catch (err) {}
+  try { await update(ref(db, `rooms/${S.room}/round`), { status: 'done', result: { noWinner: true, winners: [], reason: 'exhausted' } }); } catch (err) {}
 }
 function onClaimsChanged(){
   if (!S.isCaller || !S.round) return;
@@ -1090,14 +880,13 @@ async function resolveClaims(){
   let updates;
   const allCardNos = Object.keys(S.cards).map(Number);
   const allOut = allCardNos.length > 0 && allCardNos.every((n) => newOut[n]);
-  if (winners.length) updates = { status: 'done', out: newOut, result: { noWinner: false, winners }, claimDeadline: null, note: note, payoutStatus:'pending' };
-  else if (allOut) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'allOut' }, claimDeadline: null, note: note, payoutStatus:'pending' };
-  else if (called.length >= 75) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'exhausted' }, claimDeadline: null, note: note, payoutStatus:'pending' };
+  if (winners.length) updates = { status: 'done', out: newOut, result: { noWinner: false, winners }, claimDeadline: null, note: note };
+  else if (allOut) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'allOut' }, claimDeadline: null, note: note };
+  else if (called.length >= 75) updates = { status: 'done', out: newOut, result: { noWinner: true, winners: [], reason: 'exhausted' }, claimDeadline: null, note: note };
   else updates = { status: 'running', out: newOut, claimDeadline: null, note: note };
   try {
     await update(ref(db, `rooms/${S.room}/round`), updates);
     await remove(ref(db, `rooms/${S.room}/claims`));
-    if(updates.status==='done' && updates.result?.reason!=='cancelled') await settleRound();
   } catch (err) { toast('ስህተት፦ ' + (err.code || err.message)); }
   if (updates.status === 'running') scheduleDraw(CALL_MS);
 }
@@ -1396,7 +1185,7 @@ function proPanelHtml(tab){
   const name = me?.name || S.form?.name || 'Player';
   const pid = me?.playerId || S.form?.playerId || '—';
   const room = S.room || S.form?.room || '—';
-  const balance = S.isCaller ? Number(S.callerWallet?.balance||0) : proCoins(me);
+  const balance = proCoins(me);
   const role = S.isCaller ? 'Caller' : 'Player';
 
   if(tab==='profile') return `
@@ -1422,7 +1211,7 @@ function proPanelHtml(tab){
 
   if(tab==='coins') {
     const allReq=Object.values(S.coinRequests||{}).filter(q=>q&&q.uid===S.uid);
-    const allTx=S.isCaller ? Object.values(S.callerTransactions||{}) : Object.values(S.coinTransactions||{}).filter(x=>x.playerId===S.currentPlayerId);
+    const allTx=Object.values(S.coinTransactions||{}).filter(x=>!x.uid||x.uid===S.uid);
     const income=allTx.filter(x=>x.type==='Income'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const expense=allTx.filter(x=>x.type==='Expense'&&x.status==='Approved').reduce((n,x)=>n+(+x.amount||0),0);
     const pending=allReq.some(q=>q.status==='pending');
